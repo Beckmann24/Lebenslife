@@ -6,10 +6,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-r from-blue-100 to-purple-200 min-h-screen text-gray-800">
-  <div class="max-w-2xl mx-auto p-6">
+  <div class="max-w-6xl mx-auto p-6">
     <h1 class="text-4xl font-bold text-center mb-6">Lebenslife</h1>
 
-    <div id="charakterErstellung" class="bg-white shadow-xl rounded-2xl p-6 space-y-4">
+    <div id="charakterErstellung" class="bg-white shadow-xl rounded-2xl p-6 space-y-4 max-w-2xl mx-auto">
       <h2 class="text-2xl font-semibold mb-4">Charakter erstellen</h2>
       <input type="text" id="vorname" placeholder="Vorname" class="w-full p-2 border rounded">
       <input type="text" id="nachname" placeholder="Nachname" class="w-full p-2 border rounded">
@@ -46,8 +46,15 @@
       <button onclick="charakterErstellen()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full">Starten</button>
     </div>
 
-    <div id="spielbereich" class="hidden mt-6 space-y-4">
-      <div class="bg-white shadow-xl rounded-2xl p-4">
+    <div id="spielbereich" class="hidden mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Linke Spalte: bisher erlebt -->
+      <div id="ereignisverlauf" class="bg-white shadow-xl rounded-2xl p-4 md:col-span-1">
+        <h2 class="text-xl font-bold mb-2">Bisher erlebt</h2>
+        <div id="verlaufstext" class="text-sm space-y-2"></div>
+      </div>
+
+      <!-- Mitte: Statusanzeige -->
+      <div class="bg-white shadow-xl rounded-2xl p-4 md:col-span-1">
         <p class="text-lg"><strong>Name:</strong> <span id="anzeigename"></span></p>
         <p><strong>Alter:</strong> <span id="alter">0</span></p>
         <p><strong>Ort:</strong> <span id="anzeigeort"></span></p>
@@ -57,7 +64,8 @@
         <p><strong>Aussehen:</strong> <span id="anzeigeaussehen"></span></p>
       </div>
 
-      <div class="bg-white shadow-xl rounded-2xl p-4">
+      <!-- Rechte Spalte: Aktionen -->
+      <div class="bg-white shadow-xl rounded-2xl p-4 md:col-span-1">
         <p class="text-xl font-semibold mb-2">Was möchtest du tun?</p>
         <div class="space-y-2">
           <button id="btnAusbildung" onclick="ausbildungStarten()" class="bg-yellow-400 text-white px-4 py-2 rounded w-full disabled:opacity-50">Ausbildung</button>
@@ -65,9 +73,8 @@
           <button onclick="naechstesJahr()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded w-full">Nächstes Jahr</button>
           <button onclick="zeigeBeziehungen()" class="bg-pink-400 hover:bg-pink-500 text-white px-4 py-2 rounded w-full">Beziehungen</button>
         </div>
+        <div id="ereignisse" class="mt-4 space-y-2"></div>
       </div>
-
-      <div id="ereignisse" class="bg-white shadow-xl rounded-2xl p-4 space-y-2"></div>
     </div>
   </div>
 
@@ -109,6 +116,21 @@
       document.getElementById("spielbereich").classList.remove("hidden");
 
       updateButtons();
+      zeigeStartgeschichte();
+    }
+
+    function zeigeStartgeschichte() {
+      const beziehungsstatus = Math.random() > 0.5 ? "verheiratet" : "getrennt";
+      const vermögenMutter = Math.floor(Math.random() * 100000);
+      const vermögenVater = Math.floor(Math.random() * 100000);
+      const ortKennengelernt = ["in der Schule", "bei der Arbeit", "im Urlaub", "auf einer Party", "über Freunde"][Math.floor(Math.random() * 5)];
+
+      const text = `Deine Eltern heißen Anna ${nachname} und Thomas ${nachname}. Sie haben sich ${ortKennengelernt} kennengelernt und sind ${beziehungsstatus}. Deine Mutter hat ein Vermögen von ${vermögenMutter.toLocaleString()} € und dein Vater ${vermögenVater.toLocaleString()} €.`;
+
+      const verlauf = document.getElementById("verlaufstext");
+      const p = document.createElement("p");
+      p.textContent = text;
+      verlauf.appendChild(p);
     }
 
     function naechstesJahr() {
@@ -174,7 +196,6 @@
       return div;
     }
 
-    // Slider Werte anzeigen
     ["zufriedenheit", "gesundheit", "intelligenz", "aussehen"].forEach(id => {
       const input = document.getElementById(id);
       const label = document.getElementById(id + "Wert");
@@ -183,3 +204,4 @@
   </script>
 </body>
 </html>
+
