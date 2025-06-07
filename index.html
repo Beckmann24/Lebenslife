@@ -6,20 +6,59 @@
   <style>
     body {
       font-family: sans-serif;
+      max-width: 480px;
+      margin: 40px auto;
       text-align: center;
-      margin-top: 100px;
+      background: #f0f0f0;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px #ccc;
     }
     input, select, button {
       padding: 10px;
-      margin-top: 10px;
+      margin: 10px 0;
       font-size: 16px;
+      width: 80%;
+      max-width: 300px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
-    #lifeButton {
-      margin-top: 20px;
-      display: none;
-      padding: 12px 24px;
-      font-size: 18px;
+    button {
       cursor: pointer;
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #004a99;
+    }
+    #lifeCenter {
+      margin-top: 20px;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 0 10px #bbb;
+    }
+    #stats {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .action-button {
+      width: 90%;
+      max-width: 350px;
+      padding: 12px;
+      margin: 8px auto;
+      font-size: 18px;
+      background-color: #008080;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      transition: background-color 0.25s ease;
+    }
+    .action-button:hover {
+      background-color: #005050;
     }
   </style>
 </head>
@@ -57,13 +96,11 @@
 
   <p id="status"></p>
 
-  <button id="lifeButton" onclick="leben()">Leben</button>
-
   <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBgM3QJcj4WnOM9KcTikJI-YXF7iTiUNJI",
@@ -79,7 +116,9 @@
     const db = getFirestore(app);
 
     let userId = null;
+    let playerData = null;
 
+    // Anonym anmelden
     signInAnonymously(auth)
       .then(() => {
         document.getElementById("status").textContent = "Eingeloggt. Du kannst loslegen!";
@@ -95,30 +134,19 @@
       }
     });
 
+    // Leben starten & speichern
     window.startLife = async function () {
       const name = document.getElementById("nameInput").value.trim();
       const country = document.getElementById("countrySelect").value;
       const city = document.getElementById("citySelect").value;
       const gender = document.getElementById("genderSelect").value;
 
-      if (!name) {
-        alert("Bitte gib einen Namen ein.");
-        return;
-      }
-      if (!country) {
-        alert("Bitte wähle dein Herkunftsland.");
-        return;
-      }
-      if (!city) {
-        alert("Bitte wähle deinen Ort.");
-        return;
-      }
-      if (!gender) {
-        alert("Bitte wähle dein Geschlecht.");
-        return;
-      }
+      if (!name) { alert("Bitte gib einen Namen ein."); return; }
+      if (!country) { alert("Bitte wähle dein Herkunftsland."); return; }
+      if (!city) { alert("Bitte wähle deinen Ort."); return; }
+      if (!gender) { alert("Bitte wähle dein Geschlecht."); return; }
 
-      const playerData = {
+      playerData = {
         name,
         country,
         city,
@@ -131,22 +159,99 @@
 
       try {
         await setDoc(doc(db, "spielstaende", userId), playerData);
-
-        document.body.innerHTML = `
-          <h1>Willkommen, ${name}!</h1>
-          <p>Du bist gerade geboren worden.</p>
-          <p>Alter: 0 | Gesundheit: 100 | Glück: 50</p>
-          <button id="lifeButton" onclick="leben()">Leben</button>
-        `;
+        renderLifeCenter();
       } catch (e) {
         alert("Fehler beim Speichern: " + e.message);
       }
     };
 
-    window.leben = function () {
-      alert("Lebens-Button wurde gedrückt. Hier könnte dein Spiel weitergehen!");
-      // Hier kannst du später den weiteren Spielverlauf programmieren.
+    // Lebensschaltzentrale rendern
+    function renderLifeCenter() {
+      document.body.innerHTML = `
+        <h1>Willkommen, ${playerData.name}!</h1>
+        <div id="lifeCenter">
+          <div id="stats">
+            <p><strong>Alter:</strong> ${playerData.age}</p>
+            <p><strong>Gesundheit:</strong> ${playerData.health}</p>
+            <p><strong>Glück:</strong> ${playerData.happiness}</p>
+            <p><strong>Herkunft:</strong> ${playerData.city}, ${playerData.country}</p>
+            <p><strong>Geschlecht:</strong> ${playerData.gender}</p>
+          </div>
+
+          <button class="action-button" onclick="liveYear()">Leben</button>
+          <button class="action-button" onclick="work()">Arbeit</button>
+          <button class="action-button" onclick="study()">Ausbildung</button>
+          <button class="action-button" onclick="leisure()">Freizeit</button>
+          <button class="action-button" onclick="relationships()">Beziehungen</button>
+          <button class="action-button" onclick="showStats()">Statistik</button>
+        </div>
+        <p id="actionStatus"></p>
+      `;
+    }
+
+    // Beispiel: Ein Jahr leben (Alter +1, Glück +5, Gesundheit -2)
+    window.liveYear = async function () {
+      playerData.age++;
+      playerData.happiness = Math.min(playerData.happiness + 5, 100);
+      playerData.health = Math.max(playerData.health - 2, 0);
+      await updatePlayer();
+      showAction("Du hast ein Jahr gelebt.");
     };
+
+    window.work = async function () {
+      playerData.happiness = Math.max(playerData.happiness - 3, 0);
+      playerData.health = Math.max(playerData.health - 1, 0);
+      await updatePlayer();
+      showAction("Du hast gearbeitet.");
+    };
+
+    window.study = async function () {
+      playerData.happiness = Math.min(playerData.happiness + 2, 100);
+      playerData.health = Math.max(playerData.health - 1, 0);
+      await updatePlayer();
+      showAction("Du hast dich weitergebildet.");
+    };
+
+    window.leisure = async function () {
+      playerData.happiness = Math.min(playerData.happiness + 10, 100);
+      playerData.health = Math.min(playerData.health + 2, 100);
+      await updatePlayer();
+      showAction("Du hast Freizeit genossen.");
+    };
+
+    window.relationships = async function () {
+      playerData.happiness = Math.min(playerData.happiness + 7, 100);
+      await updatePlayer();
+      showAction("Du hast soziale Beziehungen gepflegt.");
+    };
+
+    window.showStats = function () {
+      alert(
+        `Name: ${playerData.name}\n` +
+        `Alter: ${playerData.age}\n` +
+        `Gesundheit: ${playerData.health}\n` +
+        `Glück: ${playerData.happiness}\n` +
+        `Herkunft: ${playerData.city}, ${playerData.country}\n` +
+        `Geschlecht: ${playerData.gender}`
+      );
+    };
+
+    async function updatePlayer() {
+      try {
+        await setDoc(doc(db, "spielstaende", userId), playerData);
+        renderLifeCenter();  // UI aktualisieren
+      } catch (e) {
+        alert("Fehler beim Aktualisieren: " + e.message);
+      }
+    }
+
+    function showAction(message) {
+      const status = document.getElementById("actionStatus");
+      if (status) {
+        status.textContent = message;
+        setTimeout(() => { status.textContent = ""; }, 3000);
+      }
+    }
   </script>
 </body>
 </html>
