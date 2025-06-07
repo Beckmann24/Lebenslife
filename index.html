@@ -30,8 +30,12 @@
       border: none;
       transition: background-color 0.3s ease;
     }
-    button:hover {
+    button:hover:enabled {
       background-color: #004a99;
+    }
+    button:disabled {
+      background-color: #999999;
+      cursor: default;
     }
     #lifeCenter {
       margin-top: 20px;
@@ -57,8 +61,13 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.2);
       transition: background-color 0.25s ease;
     }
-    .action-button:hover {
+    .action-button:hover:enabled {
       background-color: #005050;
+    }
+    .action-button:disabled {
+      background-color: #999999;
+      cursor: default;
+      box-shadow: none;
     }
   </style>
 </head>
@@ -100,7 +109,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBgM3QJcj4WnOM9KcTikJI-YXF7iTiUNJI",
@@ -118,7 +127,6 @@
     let userId = null;
     let playerData = null;
 
-    // Anonym anmelden
     signInAnonymously(auth)
       .then(() => {
         document.getElementById("status").textContent = "Eingeloggt. Du kannst loslegen!";
@@ -134,7 +142,6 @@
       }
     });
 
-    // Leben starten & speichern
     window.startLife = async function () {
       const name = document.getElementById("nameInput").value.trim();
       const country = document.getElementById("countrySelect").value;
@@ -165,8 +172,20 @@
       }
     };
 
-    // Lebensschaltzentrale rendern
+    // Rendern der Lebenszentrale mit Zustandsprüfung für Buttons
     function renderLifeCenter() {
+      // Buttons: Arbeit und Ausbildung je nach Alter anpassen
+      let workDisabled = playerData.age < 16;
+      let studyDisabled = false;
+      let studyLabel = "Ausbildung";
+
+      if (playerData.age < 3) {
+        studyDisabled = true;
+        studyLabel = "Ausbildung (ab 3 Jahre)";
+      } else if (playerData.age >= 3 && playerData.age < 6) {
+        studyLabel = "Kindergarten";
+      }
+
       document.body.innerHTML = `
         <h1>Willkommen, ${playerData.name}!</h1>
         <div id="lifeCenter">
@@ -179,8 +198,8 @@
           </div>
 
           <button class="action-button" onclick="liveYear()">Leben</button>
-          <button class="action-button" onclick="work()">Arbeit</button>
-          <button class="action-button" onclick="study()">Ausbildung</button>
+          <button id="workBtn" class="action-button" onclick="work()" ${workDisabled ? "disabled" : ""}>Arbeit</button>
+          <button id="studyBtn" class="action-button" onclick="study()" ${studyDisabled ? "disabled" : ""}>${studyLabel}</button>
           <button class="action-button" onclick="leisure()">Freizeit</button>
           <button class="action-button" onclick="relationships()">Beziehungen</button>
           <button class="action-button" onclick="showStats()">Statistik</button>
@@ -189,7 +208,7 @@
       `;
     }
 
-    // Beispiel: Ein Jahr leben (Alter +1, Glück +5, Gesundheit -2)
+    // Lebensjahr leben und speichern (alter, glück, gesundheit)
     window.liveYear = async function () {
       playerData.age++;
       playerData.happiness = Math.min(playerData.happiness + 5, 100);
@@ -206,23 +225,33 @@
     };
 
     window.study = async function () {
-      playerData.happiness = Math.min(playerData.happiness + 2, 100);
-      playerData.health = Math.max(playerData.health - 1, 0);
+      // Je nach Alter unterschiedliche Effekte (z.B. Kindergarten oder Ausbildung)
+      if (playerData.age >= 3 && playerData.age < 6) {
+        playerData.happiness = Math.min(playerData.happiness + 4, 100);
+        playerData.health = Math.min(playerData.health + 1, 100);
+        showAction("Du hast den Kindergarten besucht.");
+      } else if (playerData.age >= 6) {
+        playerData.happiness = Math.min(playerData.happiness + 6, 100);
+        playerData.health = Math.min(playerData.health + 2, 100);
+        showAction("Du hast eine Ausbildung gemacht.");
+      } else {
+        showAction("Du bist zu jung für Ausbildung/Kindergarten.");
+        return;
+      }
       await updatePlayer();
-      showAction("Du hast dich weitergebildet.");
     };
 
     window.leisure = async function () {
-      playerData.happiness = Math.min(playerData.happiness + 10, 100);
-      playerData.health = Math.min(playerData.health + 2, 100);
+      playerData.happiness = Math.min(playerData.happiness + 8, 100);
+      playerData.health = Math.min(playerData.health + 3, 100);
       await updatePlayer();
       showAction("Du hast Freizeit genossen.");
     };
 
     window.relationships = async function () {
-      playerData.happiness = Math.min(playerData.happiness + 7, 100);
+      playerData.happiness = Math.min(playerData.happiness + 5, 100);
       await updatePlayer();
-      showAction("Du hast soziale Beziehungen gepflegt.");
+      showAction("Du hast Zeit mit Freunden/Familie verbracht.");
     };
 
     window.showStats = function () {
@@ -231,26 +260,20 @@
         `Alter: ${playerData.age}\n` +
         `Gesundheit: ${playerData.health}\n` +
         `Glück: ${playerData.happiness}\n` +
-        `Herkunft: ${playerData.city}, ${playerData.country}\n` +
+        `Ort: ${playerData.city}, ${playerData.country}\n` +
         `Geschlecht: ${playerData.gender}`
       );
     };
 
     async function updatePlayer() {
-      try {
-        await setDoc(doc(db, "spielstaende", userId), playerData);
-        renderLifeCenter();  // UI aktualisieren
-      } catch (e) {
-        alert("Fehler beim Aktualisieren: " + e.message);
-      }
+      // Überschreibt den alten Speicherstand mit neuem
+      await setDoc(doc(db, "spielstaende", userId), playerData);
+      renderLifeCenter();
     }
 
-    function showAction(message) {
-      const status = document.getElementById("actionStatus");
-      if (status) {
-        status.textContent = message;
-        setTimeout(() => { status.textContent = ""; }, 3000);
-      }
+    function showAction(msg) {
+      const statusEl = document.getElementById("actionStatus");
+      statusEl.textContent = msg;
     }
   </script>
 </body>
