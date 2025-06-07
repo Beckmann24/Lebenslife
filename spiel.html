@@ -1,0 +1,30 @@
+<!-- spiel.html -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Lebenslife – Spiel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-green-100 to-blue-100 min-h-screen p-6">
+  <h1 class="text-3xl font-bold mb-4">Willkommen bei Lebenslife</h1>
+  <div id="charakterInfo" class="bg-white p-4 rounded shadow"></div>
+
+  <script>
+    const daten = JSON.parse(localStorage.getItem("charakter"));
+    if (daten) {
+      document.getElementById("charakterInfo").innerHTML = `
+        <p><strong>Name:</strong> ${daten.vorname} ${daten.nachname}</p>
+        <p><strong>Geburtsort:</strong> ${daten.geburtsort}, ${daten.geburtsland}</p>
+        <p><strong>Geschlecht:</strong> ${daten.geschlecht}</p>
+        <p><strong>Zufriedenheit:</strong> ${daten.zufriedenheit}</p>
+        <p><strong>Gesundheit:</strong> ${daten.gesundheit}</p>
+        <p><strong>Intelligenz:</strong> ${daten.intelligenz}</p>
+        <p><strong>Aussehen:</strong> ${daten.aussehen}</p>
+      `;
+    } else {
+      document.getElementById("charakterInfo").textContent = "Keine Charakterdaten gefunden.";
+    }
+  </script>
+</body>
+</html>
