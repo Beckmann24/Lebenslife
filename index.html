@@ -1,339 +1,129 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <title>Lebenslife</title>
+  <meta charset="UTF-8">
+  <title>TextLife</title>
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      margin-top: 40px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    input, select, button {
-      padding: 10px;
-      margin: 5px 0;
-      font-size: 16px;
-      width: 100%;
-      max-width: 300px;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-      text-align: left;
-      max-width: 300px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .slider-container {
-      margin-bottom: 15px;
-      text-align: left;
-      max-width: 300px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .slider-container span {
-      display: inline-block;
-      width: 80px;
-    }
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    #statsDisplay {
-      margin-top: 20px;
-      text-align: left;
-      max-width: 300px;
-      margin-left: auto;
-      margin-right: auto;
-      background: #f0f0f0;
-      padding: 10px;
-      border-radius: 6px;
-    }
-    #questContainer button {
-      width: 100%;
-      margin: 5px 0;
-      text-align: left;
-    }
-    #timeline {
-      text-align: left;
-      max-width: 400px;
-      margin: 20px auto;
-      background: #e8f4fa;
-      padding: 10px;
-      border-radius: 6px;
-      height: 150px;
-      overflow-y: auto;
-      font-size: 14px;
-      border: 1px solid #ccc;
-    }
-    #lifeButtons button {
-      width: 100px;
-      margin: 5px;
-    }
-    #relationshipsList {
-      max-width: 400px;
-      margin: 20px auto;
-      text-align: left;
-      background: #f9f9f9;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, select, button { margin: 5px; }
+    #lifeCenter { display: none; }
+    button:disabled { background-color: #ccc; cursor: not-allowed; }
   </style>
 </head>
 <body>
-  <h1>🧬 Lebenslife</h1>
-
   <div id="characterCreation">
-    <p>Verteile deine 200% auf die 4 Stats (max. 100% pro Stat):</p>
-    <div class="slider-container">
-      <label for="glueckSlider">Glücklichkeit: <span id="glueckValue">50%</span></label>
-      <input type="range" min="0" max="100" value="50" id="glueckSlider" />
-    </div>
-    <div class="slider-container">
-      <label for="gesundheitSlider">Gesundheit: <span id="gesundheitValue">50%</span></label>
-      <input type="range" min="0" max="100" value="50" id="gesundheitSlider" />
-    </div>
-    <div class="slider-container">
-      <label for="intelligenzSlider">Intelligenz: <span id="intelligenzValue">50%</span></label>
-      <input type="range" min="0" max="100" value="50" id="intelligenzSlider" />
-    </div>
-    <div class="slider-container">
-      <label for="aussehenSlider">Aussehen: <span id="aussehenValue">50%</span></label>
-      <input type="range" min="0" max="100" value="50" id="aussehenSlider" />
-    </div>
-    <p id="pointsLeft" style="font-weight:bold;"></p>
-
-    <label for="nameInput">Vorname:</label>
-    <input type="text" id="nameInput" placeholder="Dein Vorname" />
-
-    <label for="nachnameInput">Nachname:</label>
-    <input type="text" id="nachnameInput" placeholder="Dein Nachname" />
-
-    <label for="herkunftLand">Herkunftsland:</label>
+    <h2>Charaktererstellung</h2>
+    <input type="text" id="nameInput" placeholder="Vorname">
+    <input type="text" id="nachnameInput" placeholder="Nachname"><br>
+    <input type="text" id="ort" placeholder="Geburtsort">
     <select id="herkunftLand">
-      <option value="" disabled selected>Bitte wählen</option>
-      <option>Deutschland</option>
-      <option>Österreich</option>
-      <option>Schweiz</option>
-      <option>Andere</option>
-    </select>
-
-    <label for="ort">Ort:</label>
-    <select id="ort">
-      <option value="" disabled selected>Bitte wählen</option>
-      <option>Berlin</option>
-      <option>Hamburg</option>
-      <option>München</option>
-      <option>Köln</option>
-      <option>Andere</option>
-    </select>
-
-    <label for="geschlecht">Geschlecht:</label>
+      <option value="">Herkunftsland wählen</option>
+      <option value="Deutschland">Deutschland</option>
+      <option value="Österreich">Österreich</option>
+      <option value="Schweiz">Schweiz</option>
+    </select><br>
     <select id="geschlecht">
-      <option value="" disabled selected>Bitte wählen</option>
-      <option>Männlich</option>
-      <option>Weiblich</option>
-    </select>
-
-    <button id="startLifeBtn" onclick="startLife()">Leben starten</button>
+      <option value="">Geschlecht wählen</option>
+      <option value="männlich">Männlich</option>
+      <option value="weiblich">Weiblich</option>
+      <option value="divers">Divers</option>
+    </select><br>
+    Glück: <input type="range" id="glueck" min="0" max="100" value="50">
+    Gesundheit: <input type="range" id="gesundheit" min="0" max="100" value="50"><br>
+    Intelligenz: <input type="range" id="intelligenz" min="0" max="100" value="50">
+    Aussehen: <input type="range" id="aussehen" min="0" max="100" value="50"><br>
+    <button onclick="startLife()">Leben starten</button>
   </div>
 
-  <div id="lifeCenter" style="display:none;">
+  <div id="lifeCenter">
     <h2 id="welcome"></h2>
     <div id="statsDisplay"></div>
+    <div id="questContainer"></div>
+    <button id="ageUpBtn">+1 Jahr</button>
+    <button id="arbeitBtn">Arbeiten</button>
+    <button id="ausbildungBtn">Ausbildung</button>
+    <button id="freizeitBtn">Freizeit</button>
+    <button id="beziehungenBtn" onclick="showRelationships()">Beziehungen</button>
+    <div id="timeline" style="margin-top:10px; max-height:200px; overflow-y:auto; border:1px solid #ccc; padding:10px;"></div>
+  </div>
 
-    <div id="lifeButtons" style="margin-top:20px;">
-      <button id="arbeitBtn">Arbeit</button>
-      <button id="ausbildungBtn">Ausbildung</button>
-      <button id="freizeitBtn">Freizeit</button>
-      <button id="beziehungenBtn">Beziehungen</button>
-      <button id="ageUpBtn" style="background-color:#4CAF50; color:white;">+ Alter</button>
-    </div>
-
-    <div id="questContainer" style="margin-top:20px;"></div>
-    <h3>Lebensverlauf:</h3>
-    <div id="timeline"></div>
-
-    <div id="relationshipsList" style="display:none;">
-      <h3>Beziehungen</h3>
-      <ul id="relationshipsUl"></ul>
-      <button onclick="hideRelationships()">Schließen</button>
-    </div>
+  <div id="relationshipsList" style="display:none;">
+    <h3>Beziehungen</h3>
+    <ul id="relationshipsUl"></ul>
+    <button onclick="hideRelationships()">Schließen</button>
   </div>
 
   <script>
-    let playerData = null;
-    const totalPoints = 200;
+    let playerData = {};
 
-    // Slider Elemente
-    const glueckSlider = document.getElementById('glueckSlider');
-    const gesundheitSlider = document.getElementById('gesundheitSlider');
-    const intelligenzSlider = document.getElementById('intelligenzSlider');
-    const aussehenSlider = document.getElementById('aussehenSlider');
-
-    // Anzeige der Werte
-    const glueckValue = document.getElementById('glueckValue');
-    const gesundheitValue = document.getElementById('gesundheitValue');
-    const intelligenzValue = document.getElementById('intelligenzValue');
-    const aussehenValue = document.getElementById('aussehenValue');
-    const pointsLeft = document.getElementById('pointsLeft');
-
-    // Aktualisiert die Anzeige und verhindert Überschreitung von 200%
-    function updateSliders() {
-      let sum = parseInt(glueckSlider.value) + parseInt(gesundheitSlider.value) + parseInt(intelligenzSlider.value) + parseInt(aussehenSlider.value);
-      let left = totalPoints - sum;
-      pointsLeft.textContent = `Verbleibende Punkte: ${left}`;
-      glueckValue.textContent = glueckSlider.value + '%';
-      gesundheitValue.textContent = gesundheitSlider.value + '%';
-      intelligenzValue.textContent = intelligenzSlider.value + '%';
-      aussehenValue.textContent = aussehenSlider.value + '%';
-
-      if(left < 0) {
-        pointsLeft.style.color = 'red';
-      } else {
-        pointsLeft.style.color = 'black';
-      }
+    function clampStat(val) {
+      return Math.max(0, Math.min(100, val));
     }
 
-    glueckSlider.addEventListener('input', updateSliders);
-    gesundheitSlider.addEventListener('input', updateSliders);
-    intelligenzSlider.addEventListener('input', updateSliders);
-    aussehenSlider.addEventListener('input', updateSliders);
-
-    updateSliders();
-
-    // Clamp Funktion für Stats auf 0-100%
-    function clampStat(value) {
-      if(value < 0) return 0;
-      if(value > 100) return 100;
-      return value;
-    }
-
-    // Beziehungen generieren
     function generateRelationships(name, nachname) {
-      const relationships = [];
+      let relationships = [];
+      const status = ['verheiratet', 'getrennt', 'alleinerziehend'][Math.floor(Math.random() * 3)];
+      const sexuality = ['hetero', 'lesbisch', 'schwul'][Math.floor(Math.random() * 3)];
 
-      let rand = Math.random()*100;
-      let status = '';
-      if(rand <= 70) status = 'verheiratet';
-      else if(rand <= 80) status = 'zusammen';
-      else if(rand <= 95) status = 'getrennt';
-      else status = 'geschieden';
-
-      let sexualParentsRand = Math.random()*100;
-      let parentsSexuality = 'hetero';
-      if(sexualParentsRand < 10) parentsSexuality = 'schwul';
-      else if(sexualParentsRand < 20) parentsSexuality = 'lesbisch';
-
-      let motherGender = 'weiblich';
-      let fatherGender = 'männlich';
-      if(parentsSexuality === 'lesbisch') {
-        motherGender = 'weiblich';
-        fatherGender = 'weiblich';
-      } else if(parentsSexuality === 'schwul') {
-        motherGender = 'männlich';
-        fatherGender = 'männlich';
-      }
-
-      relationships.push({
-        id: 0,
-        type: 'Elternteil',
-        name: 'Mutter ' + nachname,
-        gender: motherGender,
-        status: status,
-        sexualOrientation: parentsSexuality
-      });
-
-      relationships.push({
-        id: 1,
-        type: 'Elternteil',
-        name: 'Vater ' + nachname,
-        gender: fatherGender,
-        status: status,
-        sexualOrientation: parentsSexuality
-      });
+      relationships.push({ id: 0, type: 'Elternteil', name: 'Mutter ' + nachname, gender: sexuality === 'schwul' ? 'männlich' : 'weiblich', status, sexualOrientation: sexuality });
+      relationships.push({ id: 1, type: 'Elternteil', name: 'Vater ' + nachname, gender: sexuality === 'lesbisch' ? 'weiblich' : 'männlich', status, sexualOrientation: sexuality });
 
       return relationships;
     }
 
-    // Start des Lebens
     function startLife() {
-      let sum = parseInt(glueckSlider.value) + parseInt(gesundheitSlider.value) + parseInt(intelligenzSlider.value) + parseInt(aussehenSlider.value);
-      if(sum > totalPoints) {
-        alert('Bitte verteile maximal 200% auf die 4 Stats!');
+      const glueck = parseInt(document.getElementById('glueck').value);
+      const gesundheit = parseInt(document.getElementById('gesundheit').value);
+      const intelligenz = parseInt(document.getElementById('intelligenz').value);
+      const aussehen = parseInt(document.getElementById('aussehen').value);
+      if (glueck + gesundheit + intelligenz + aussehen > 200) {
+        alert('Maximal 200% auf alle Werte zusammen!');
         return;
       }
 
       const name = document.getElementById('nameInput').value.trim();
       const nachname = document.getElementById('nachnameInput').value.trim();
-      const herkunftLand = document.getElementById('herkunftLand').value;
       const ort = document.getElementById('ort').value;
+      const land = document.getElementById('herkunftLand').value;
       const geschlecht = document.getElementById('geschlecht').value;
 
-      if(!name || !nachname || !herkunftLand || !ort || !geschlecht) {
-        alert('Bitte fülle alle Felder aus!');
+      if (!name || !nachname || !ort || !land || !geschlecht) {
+        alert('Bitte alle Felder ausfüllen!');
         return;
       }
 
       playerData = {
-        name: name,
-        nachname: nachname,
-        herkunftLand: herkunftLand,
-        ort: ort,
-        geschlecht: geschlecht,
+        name, nachname, ort, land, geschlecht,
         age: 0,
-        glueck: parseInt(glueckSlider.value),
-        gesundheit: parseInt(gesundheitSlider.value),
-        intelligenz: parseInt(intelligenzSlider.value),
-        aussehen: parseInt(aussehenSlider.value),
+        glueck, gesundheit, intelligenz, aussehen,
         relationships: generateRelationships(name, nachname),
         timeline: [],
-        questQueue: [],
+        questQueue: []
       };
 
       document.getElementById('characterCreation').style.display = 'none';
       document.getElementById('lifeCenter').style.display = 'block';
-      document.getElementById('welcome').textContent = `Willkommen, ${playerData.name} ${playerData.nachname}!`;
+      document.getElementById('welcome').textContent = `Willkommen, ${name} ${nachname}!`;
+
       updateStats();
-      generateQuestsForAge(playerData.age);
-      updateQuestUI();
-
-      // Button Events
-      document.getElementById('ageUpBtn').onclick = () => {
-        playerData.age++;
-        playerData.timeline.push(`Du bist jetzt ${playerData.age} Jahre alt.`);
-        updateStats();
-        generateQuestsForAge(playerData.age);
-        updateQuestUI();
-        updateTimeline();
-        checkGameOver();
-      };
-
-      document.getElementById('arbeitBtn').onclick = () => {
-        addEventToTimeline('Du hast gearbeitet.');
-        modifyStats(-1, -1, 0, 0);
-      };
-
-      document.getElementById('ausbildungBtn').onclick = () => {
-        addEventToTimeline('Du hast an deiner Ausbildung gearbeitet.');
-        modifyStats(0, 0, 3, 0);
-      };
-
-      document.getElementById('freizeitBtn').onclick = () => {
-        addEventToTimeline('Du hast Freizeit genossen.');
-        modifyStats(3, 2, 0, 0);
-      };
-
-      document.getElementById('beziehungenBtn').onclick = () => {
-        showRelationships();
-      };
-
+      updateButtons();
+      generateQuests();
       updateTimeline();
+    }
+
+    function updateButtons() {
+      document.getElementById('arbeitBtn').disabled = playerData.age < 16;
+      document.getElementById('ausbildungBtn').disabled = playerData.age < 6;
+    }
+
+    function updateStats() {
+      document.getElementById('statsDisplay').innerHTML = `
+        <b>Alter:</b> ${playerData.age}<br>
+        <b>Glück:</b> ${playerData.glueck}%<br>
+        <b>Gesundheit:</b> ${playerData.gesundheit}%<br>
+        <b>Intelligenz:</b> ${playerData.intelligenz}%<br>
+        <b>Aussehen:</b> ${playerData.aussehen}%
+      `;
     }
 
     function addEventToTimeline(text) {
@@ -342,146 +132,122 @@
     }
 
     function updateTimeline() {
-      const timelineDiv = document.getElementById('timeline');
-      timelineDiv.innerHTML = playerData.timeline.map((e,i) => `<div>${e}</div>`).join('');
-      timelineDiv.scrollTop = timelineDiv.scrollHeight;
+      const timeline = document.getElementById('timeline');
+      timeline.innerHTML = playerData.timeline.map(e => `<div>${e}</div>`).join('');
+      timeline.scrollTop = timeline.scrollHeight;
     }
 
-    function modifyStats(glueckDelta, gesundheitDelta, intelligenzDelta, aussehenDelta) {
-      playerData.glueck = clampStat(playerData.glueck + glueckDelta);
-      playerData.gesundheit = clampStat(playerData.gesundheit + gesundheitDelta);
-      playerData.intelligenz = clampStat(playerData.intelligenz + intelligenzDelta);
-      playerData.aussehen = clampStat(playerData.aussehen + aussehenDelta);
+    function modifyStats(glueck, gesundheit, intelligenz, aussehen) {
+      playerData.glueck = clampStat(playerData.glueck + glueck);
+      playerData.gesundheit = clampStat(playerData.gesundheit + gesundheit);
+      playerData.intelligenz = clampStat(playerData.intelligenz + intelligenz);
+      playerData.aussehen = clampStat(playerData.aussehen + aussehen);
       updateStats();
     }
 
-    function updateStats() {
-      const statsDiv = document.getElementById('statsDisplay');
-      statsDiv.innerHTML = `
-        <b>Alter:</b> ${playerData.age} Jahre<br />
-        <b>Glücklichkeit:</b> ${playerData.glueck}%<br />
-        <b>Gesundheit:</b> ${playerData.gesundheit}%<br />
-        <b>Intelligenz:</b> ${playerData.intelligenz}%<br />
-        <b>Aussehen:</b> ${playerData.aussehen}%
-      `;
-    }
+    function generateQuests() {
+      const container = document.getElementById('questContainer');
+      container.innerHTML = '<h3>Entscheide dich:</h3>';
 
-    // Quests je nach Alter erzeugen
-    function generateQuestsForAge(age) {
-      playerData.questQueue = [];
+      const age = playerData.age;
 
-      if(age <= 3) {
-        let questCount = 1 + Math.floor(Math.random()*3);
-        for(let i=0; i<questCount; i++) {
-          playerData.questQueue.push({
-            id: `baby_${i}`,
-            text: `Babyquest ${i+1}: Lerne etwas neues.`,
-            effect: () => {
-              modifyStats(1, 1, 0, 0);
-              addEventToTimeline(`Babyquest ${i+1} abgeschlossen.`);
-            }
-          });
-        }
-      } else if(age <= 12) {
-        playerData.questQueue.push({
-          id: 'schule',
-          text: 'Gehe zur Schule und lerne.',
-          effect: () => {
-            modifyStats(1, 0, 5, 0);
-            addEventToTimeline('Du hast in der Schule gelernt.');
-          }
-        });
-        playerData.questQueue.push({
-          id: 'spielen',
-          text: 'Spiele mit Freunden draußen.',
-          effect: () => {
-            modifyStats(3, 2, 0, 0);
-            addEventToTimeline('Du hast mit Freunden gespielt.');
-          }
-        });
-      } else if(age <= 18) {
-        playerData.questQueue.push({
-          id: 'ausbildung',
-          text: 'Beginne deine Ausbildung oder Schule.',
-          effect: () => {
-            modifyStats(0, 0, 5, 0);
-            addEventToTimeline('Du hast an deiner Ausbildung gearbeitet.');
-          }
-        });
-        playerData.questQueue.push({
-          id: 'freizeit',
-          text: 'Genieße deine Freizeit und Freunde.',
-          effect: () => {
-            modifyStats(4, 0, 0, 0);
-            addEventToTimeline('Du hast deine Freizeit genossen.');
-          }
-        });
+      let quest = null;
+
+      if (age <= 3) {
+        quest = {
+          frage: 'Du siehst ein buntes Spielzeug. Was machst du?',
+          optionen: [
+            { text: 'Nimm es in den Mund', effect: () => modifyStats(1, -2, 0, 0) },
+            { text: 'Spiel fröhlich damit', effect: () => modifyStats(3, 2, 1, 0) },
+            { text: 'Ignorier es', effect: () => modifyStats(0, 0, 1, 0) }
+          ]
+        };
+      } else if (age <= 12) {
+        quest = {
+          frage: 'Ein Mitschüler wird geärgert. Was tust du?',
+          optionen: [
+            { text: 'Hilf ihm', effect: () => modifyStats(2, 0, 2, 0) },
+            { text: 'Mach mit', effect: () => modifyStats(-2, 0, -1, 1) },
+            { text: 'Ignorier es', effect: () => modifyStats(0, 0, 0, 0) }
+          ]
+        };
+      } else if (age <= 18) {
+        quest = {
+          frage: 'Du hast Freizeit. Was machst du?',
+          optionen: [
+            { text: 'Lerne für die Schule', effect: () => modifyStats(0, 0, 5, 0) },
+            { text: 'Triff Freunde', effect: () => modifyStats(4, 0, 0, 0) },
+            { text: 'Spiel Videospiele', effect: () => modifyStats(2, 0, 1, 0) }
+          ]
+        };
       } else {
-        playerData.questQueue.push({
-          id: 'arbeit',
-          text: 'Arbeite hart, um deinen Lebensunterhalt zu verdienen.',
-          effect: () => {
-            modifyStats(-1, -1, 0, 0);
-            addEventToTimeline('Du hast gearbeitet.');
-          }
-        });
-        playerData.questQueue.push({
-          id: 'partnersuche',
-          text: 'Finde eine Beziehung.',
-          effect: () => {
-            modifyStats(5, 0, 0, 0);
-            addEventToTimeline('Du hast eine Beziehung begonnen.');
-            // Hier kann man noch Beziehung hinzufügen
-          }
-        });
+        quest = {
+          frage: 'Du bekommst ein Jobangebot. Was machst du?',
+          optionen: [
+            { text: 'Nimm es an', effect: () => modifyStats(-1, -1, 0, 0) },
+            { text: 'Lehn ab & reise', effect: () => modifyStats(3, 2, 0, 0) },
+            { text: 'Such was Besseres', effect: () => modifyStats(1, 0, 2, 0) }
+          ]
+        };
       }
-    }
 
-    // UI für Quests
-    function updateQuestUI() {
-      const questContainer = document.getElementById('questContainer');
-      questContainer.innerHTML = '';
-      if(playerData.questQueue.length === 0) {
-        questContainer.innerHTML = '<p>Keine Quests verfügbar.</p>';
-        return;
-      }
-      playerData.questQueue.forEach(q => {
+      const frageEl = document.createElement('p');
+      frageEl.textContent = quest.frage;
+      container.appendChild(frageEl);
+
+      quest.optionen.forEach(opt => {
         const btn = document.createElement('button');
-        btn.textContent = q.text;
+        btn.textContent = opt.text;
         btn.onclick = () => {
-          q.effect();
-          // Quest entfernen
-          playerData.questQueue = playerData.questQueue.filter(quest => quest.id !== q.id);
-          updateQuestUI();
-          updateStats();
-          updateTimeline();
+          opt.effect();
+          addEventToTimeline(`Du hast dich entschieden: "${opt.text}"`);
+          generateQuests();
           checkGameOver();
         };
-        questContainer.appendChild(btn);
+        container.appendChild(btn);
       });
     }
 
-    // Beziehungen anzeigen
+    document.getElementById('ageUpBtn').onclick = () => {
+      playerData.age++;
+      addEventToTimeline(`Du bist jetzt ${playerData.age} Jahre alt.`);
+      updateStats();
+      updateButtons();
+      generateQuests();
+      checkGameOver();
+    };
+
+    document.getElementById('arbeitBtn').onclick = () => {
+      addEventToTimeline('Du hast gearbeitet.');
+      modifyStats(-1, -2, 0, 0);
+    };
+
+    document.getElementById('ausbildungBtn').onclick = () => {
+      addEventToTimeline('Du warst in der Ausbildung.');
+      modifyStats(0, 0, 4, 0);
+    };
+
+    document.getElementById('freizeitBtn').onclick = () => {
+      addEventToTimeline('Du hast deine Freizeit genossen.');
+      modifyStats(3, 2, 0, 0);
+    };
+
     function showRelationships() {
-      const listDiv = document.getElementById('relationshipsList');
       const ul = document.getElementById('relationshipsUl');
       ul.innerHTML = '';
-      playerData.relationships.forEach(rel => {
-        let li = document.createElement('li');
-        li.textContent = `${rel.type}: ${rel.name} (${rel.gender}), Status: ${rel.status}, Sexualität: ${rel.sexualOrientation}`;
-        ul.appendChild(li);
+      playerData.relationships.forEach(r => {
+        ul.innerHTML += `<li>${r.type}: ${r.name} (${r.gender}), Status: ${r.status}, Sexualität: ${r.sexualOrientation}</li>`;
       });
-      listDiv.style.display = 'block';
+      document.getElementById('relationshipsList').style.display = 'block';
     }
 
     function hideRelationships() {
       document.getElementById('relationshipsList').style.display = 'none';
     }
 
-    // Spielende bei Tod simulieren
     function checkGameOver() {
-      if(playerData.gesundheit <= 0) {
-        alert('Dein Charakter ist leider gestorben. Spiel vorbei.');
+      if (playerData.gesundheit <= 0) {
+        alert('Du bist gestorben. Spiel vorbei.');
         location.reload();
       }
     }
