@@ -193,29 +193,17 @@
       intelligenzValue.textContent = intelligenzSlider.value + '%';
       aussehenValue.textContent = aussehenSlider.value + '%';
 
-      // Falls zu viel vergeben, klemme den zuletzt geänderten Slider auf max
       if(left < 0) {
-        // korrigieren
-        // wir wissen nicht direkt welcher Slider geändert, also einfach alle zurück auf max 100 setzen
-        // oder wir erlauben nicht mehr als 200, hier nur Warnung anzeigen
         pointsLeft.style.color = 'red';
       } else {
         pointsLeft.style.color = 'black';
       }
     }
 
-    glueckSlider.addEventListener('input', () => {
-      updateSliders();
-    });
-    gesundheitSlider.addEventListener('input', () => {
-      updateSliders();
-    });
-    intelligenzSlider.addEventListener('input', () => {
-      updateSliders();
-    });
-    aussehenSlider.addEventListener('input', () => {
-      updateSliders();
-    });
+    glueckSlider.addEventListener('input', updateSliders);
+    gesundheitSlider.addEventListener('input', updateSliders);
+    intelligenzSlider.addEventListener('input', updateSliders);
+    aussehenSlider.addEventListener('input', updateSliders);
 
     updateSliders();
 
@@ -226,18 +214,10 @@
       return value;
     }
 
-    // Funktion um Beziehungen zu generieren
+    // Beziehungen generieren
     function generateRelationships(name, nachname) {
       const relationships = [];
 
-      // Elterliche Beziehungsform Wahrscheinlichkeiten:
-      // 70% verheiratet (beide Eltern gleicher Nachname)
-      // 10% zusammen unverheiratet (nur Vater Nachname)
-      // 15% getrennt (nur Vater Nachname)
-      // 5% geschieden (nur Vater Nachname)
-      // 10% schwule Eltern, 10% lesbische Eltern (sind alternative Formen der Eheform, hier aufgeteilt)
-
-      // Wir wählen zufällig die Elternbeziehung
       let rand = Math.random()*100;
       let status = '';
       if(rand <= 70) status = 'verheiratet';
@@ -245,217 +225,160 @@
       else if(rand <= 95) status = 'getrennt';
       else status = 'geschieden';
 
-      // Sexualität der Eltern (10% schwul, 10% lesbisch, sonst hetero)
       let sexualParentsRand = Math.random()*100;
       let parentsSexuality = 'hetero';
       if(sexualParentsRand < 10) parentsSexuality = 'schwul';
       else if(sexualParentsRand < 20) parentsSexuality = 'lesbisch';
 
-      // Eltern Geschlechter
       let motherGender = 'weiblich';
       let fatherGender = 'männlich';
-
-      // Wenn schwule Eltern: beide männlich, wenn lesbisch beide weiblich
-      if(parentsSexuality === 'schwul') {
-        motherGender = 'männlich';
-        fatherGender = 'männlich';
-      } else if(parentsSexuality === 'lesbisch') {
+      if(parentsSexuality === 'lesbisch') {
         motherGender = 'weiblich';
         fatherGender = 'weiblich';
-      }
-
-      // Nachnamen:
-      let motherNachname = '';
-      let fatherNachname = nachname;
-
-      if(status === 'verheiratet') {
-        motherNachname = nachname;
-      } else {
-        // nur Vater Nachname, Mutter anders (hier einfach "Musterfrau")
-        motherNachname = "Musterfrau";
-      }
-
-      // Alter Eltern zufällig 20-40 Jahre älter als Kind (hier Kind Alter = 0 bei Start)
-      const childAge = 0;
-      const motherAge = childAge + 20 + Math.floor(Math.random()*21);
-      const fatherAge = childAge + 20 + Math.floor(Math.random()*21);
-
-      // Sexualität der Eltern einzeln (80% hetero, 10% homo, 10% bi)
-      function getSexuality() {
-        let r = Math.random()*100;
-        if(r < 80) return "hetero";
-        else if(r < 90) return "homosexuell";
-        else return "bisexuell";
+      } else if(parentsSexuality === 'schwul') {
+        motherGender = 'männlich';
+        fatherGender = 'männlich';
       }
 
       relationships.push({
-        role: 'Mutter',
-        name: 'Maria',
-        nachname: motherNachname,
-        geschlecht: motherGender,
-        alter: motherAge,
-        sexualitaet: getSexuality()
+        id: 0,
+        type: 'Elternteil',
+        name: 'Mutter ' + nachname,
+        gender: motherGender,
+        status: status,
+        sexualOrientation: parentsSexuality
       });
 
       relationships.push({
-        role: 'Vater',
-        name: 'Max',
-        nachname: fatherNachname,
-        geschlecht: fatherGender,
-        alter: fatherAge,
-        sexualitaet: getSexuality()
+        id: 1,
+        type: 'Elternteil',
+        name: 'Vater ' + nachname,
+        gender: fatherGender,
+        status: status,
+        sexualOrientation: parentsSexuality
       });
 
       return relationships;
     }
 
-    // Funktion zum Speichern im localStorage
-    function savePlayerData() {
-      localStorage.setItem('lebenslife_save', JSON.stringify(playerData));
-    }
-
-    // Funktion zum Laden vom localStorage
-    function loadPlayerData() {
-      const saved = localStorage.getItem('lebenslife_save');
-      if(saved) {
-        playerData = JSON.parse(saved);
-        return true;
-      }
-      return false;
-    }
-
     // Start des Lebens
     function startLife() {
-      const vorname = document.getElementById('nameInput').value.trim();
+      let sum = parseInt(glueckSlider.value) + parseInt(gesundheitSlider.value) + parseInt(intelligenzSlider.value) + parseInt(aussehenSlider.value);
+      if(sum > totalPoints) {
+        alert('Bitte verteile maximal 200% auf die 4 Stats!');
+        return;
+      }
+
+      const name = document.getElementById('nameInput').value.trim();
       const nachname = document.getElementById('nachnameInput').value.trim();
       const herkunftLand = document.getElementById('herkunftLand').value;
       const ort = document.getElementById('ort').value;
       const geschlecht = document.getElementById('geschlecht').value;
 
-      if(!vorname || !nachname || !herkunftLand || !ort || !geschlecht) {
-        alert("Bitte fülle alle Felder aus.");
-        return;
-      }
-
-      // Überprüfe, ob die Punkteverteilung passt
-      let sum = parseInt(glueckSlider.value) + parseInt(gesundheitSlider.value) + parseInt(intelligenzSlider.value) + parseInt(aussehenSlider.value);
-      if(sum > totalPoints) {
-        alert("Du hast mehr als 200% auf die Stats verteilt. Bitte korrigiere das.");
+      if(!name || !nachname || !herkunftLand || !ort || !geschlecht) {
+        alert('Bitte fülle alle Felder aus!');
         return;
       }
 
       playerData = {
-        name: vorname,
+        name: name,
         nachname: nachname,
-        herkunftLand,
-        ort,
-        geschlecht,
+        herkunftLand: herkunftLand,
+        ort: ort,
+        geschlecht: geschlecht,
         age: 0,
-        glueck: clampStat(parseInt(glueckSlider.value)),
-        gesundheit: clampStat(parseInt(gesundheitSlider.value)),
-        intelligenz: clampStat(parseInt(intelligenzSlider.value)),
-        aussehen: clampStat(parseInt(aussehenSlider.value)),
+        glueck: parseInt(glueckSlider.value),
+        gesundheit: parseInt(gesundheitSlider.value),
+        intelligenz: parseInt(intelligenzSlider.value),
+        aussehen: parseInt(aussehenSlider.value),
+        relationships: generateRelationships(name, nachname),
         timeline: [],
         questQueue: [],
-        questsDone: [],
-        relationships: generateRelationships(vorname, nachname)
       };
 
-      // Add first event to timeline
-      playerData.timeline.push(`Du wurdest geboren in ${ort}, ${herkunftLand}.`);
-
-      savePlayerData();
-      showLifeCenter();
-      renderLifeCenter();
-      generateQuestsForAge(playerData.age);
-      showNextQuest();
-    }
-
-    // Anzeigen des Life Centers
-    function showLifeCenter() {
       document.getElementById('characterCreation').style.display = 'none';
       document.getElementById('lifeCenter').style.display = 'block';
-      document.getElementById('relationshipsList').style.display = 'none';
-    }
-
-    // Lebensmittelpunkt rendern (Stats, Buttons, Timeline)
-    function renderLifeCenter() {
-      document.getElementById('welcome').textContent = `Willkommen, ${playerData.name} ${playerData.nachname}! Alter: ${playerData.age}`;
-      document.getElementById('statsDisplay').innerHTML = `
-        <strong>Stats:</strong><br>
-        Glücklichkeit: ${playerData.glueck}%<br>
-        Gesundheit: ${playerData.gesundheit}%<br>
-        Intelligenz: ${playerData.intelligenz}%<br>
-        Aussehen: ${playerData.aussehen}%
-      `;
-
-      // Buttons deaktivieren je nach Alter
-      document.getElementById('arbeitBtn').disabled = playerData.age < 16;
-      if(playerData.age < 3) {
-        document.getElementById('ausbildungBtn').disabled = true;
-        document.getElementById('ausbildungBtn').textContent = "Ausbildung (gesperrt)";
-        document.getElementById('freizeitBtn').disabled = true;
-        document.getElementById('freizeitBtn').textContent = "Freizeit (gesperrt)";
-      } else if(playerData.age >= 3 && playerData.age < 6) {
-        document.getElementById('ausbildungBtn').disabled = false;
-        document.getElementById('ausbildungBtn').textContent = "Kindergarten";
-        document.getElementById('freizeitBtn').disabled = false;
-        document.getElementById('freizeitBtn').textContent = "Freizeit";
-      } else {
-        document.getElementById('ausbildungBtn').disabled = false;
-        document.getElementById('ausbildungBtn').textContent = "Ausbildung";
-        document.getElementById('freizeitBtn').disabled = false;
-        document.getElementById('freizeitBtn').textContent = "Freizeit";
-      }
-
-      // Timeline anzeigen
-      const timelineDiv = document.getElementById('timeline');
-      timelineDiv.innerHTML = '';
-      playerData.timeline.forEach((event, idx) => {
-        timelineDiv.innerHTML += `<div>${event}</div>`;
-      });
-    }
-
-    // Alters-Button Funktion (+ Alter)
-    document.getElementById('ageUpBtn').addEventListener('click', () => {
-      playerData.age++;
-      playerData.timeline.push(`Du bist jetzt ${playerData.age} Jahre alt.`);
+      document.getElementById('welcome').textContent = `Willkommen, ${playerData.name} ${playerData.nachname}!`;
+      updateStats();
       generateQuestsForAge(playerData.age);
-      savePlayerData();
-      renderLifeCenter();
-      showNextQuest();
-    });
+      updateQuestUI();
 
-    // Beziehungen anzeigen
-    document.getElementById('beziehungenBtn').addEventListener('click', () => {
-      const relDiv = document.getElementById('relationshipsList');
-      const ul = document.getElementById('relationshipsUl');
-      ul.innerHTML = '';
-      playerData.relationships.forEach(rel => {
-        ul.innerHTML += `<li><strong>${rel.role}:</strong> ${rel.name} ${rel.nachname} | Geschlecht: ${rel.geschlecht} | Alter: ${rel.alter} | Sexualität: ${rel.sexualitaet}</li>`;
-      });
-      relDiv.style.display = 'block';
-    });
+      // Button Events
+      document.getElementById('ageUpBtn').onclick = () => {
+        playerData.age++;
+        playerData.timeline.push(`Du bist jetzt ${playerData.age} Jahre alt.`);
+        updateStats();
+        generateQuestsForAge(playerData.age);
+        updateQuestUI();
+        updateTimeline();
+        checkGameOver();
+      };
 
-    function hideRelationships() {
-      document.getElementById('relationshipsList').style.display = 'none';
+      document.getElementById('arbeitBtn').onclick = () => {
+        addEventToTimeline('Du hast gearbeitet.');
+        modifyStats(-1, -1, 0, 0);
+      };
+
+      document.getElementById('ausbildungBtn').onclick = () => {
+        addEventToTimeline('Du hast an deiner Ausbildung gearbeitet.');
+        modifyStats(0, 0, 3, 0);
+      };
+
+      document.getElementById('freizeitBtn').onclick = () => {
+        addEventToTimeline('Du hast Freizeit genossen.');
+        modifyStats(3, 2, 0, 0);
+      };
+
+      document.getElementById('beziehungenBtn').onclick = () => {
+        showRelationships();
+      };
+
+      updateTimeline();
     }
 
-    // Questverwaltung
+    function addEventToTimeline(text) {
+      playerData.timeline.push(text);
+      updateTimeline();
+    }
+
+    function updateTimeline() {
+      const timelineDiv = document.getElementById('timeline');
+      timelineDiv.innerHTML = playerData.timeline.map((e,i) => `<div>${e}</div>`).join('');
+      timelineDiv.scrollTop = timelineDiv.scrollHeight;
+    }
+
+    function modifyStats(glueckDelta, gesundheitDelta, intelligenzDelta, aussehenDelta) {
+      playerData.glueck = clampStat(playerData.glueck + glueckDelta);
+      playerData.gesundheit = clampStat(playerData.gesundheit + gesundheitDelta);
+      playerData.intelligenz = clampStat(playerData.intelligenz + intelligenzDelta);
+      playerData.aussehen = clampStat(playerData.aussehen + aussehenDelta);
+      updateStats();
+    }
+
+    function updateStats() {
+      const statsDiv = document.getElementById('statsDisplay');
+      statsDiv.innerHTML = `
+        <b>Alter:</b> ${playerData.age} Jahre<br />
+        <b>Glücklichkeit:</b> ${playerData.glueck}%<br />
+        <b>Gesundheit:</b> ${playerData.gesundheit}%<br />
+        <b>Intelligenz:</b> ${playerData.intelligenz}%<br />
+        <b>Aussehen:</b> ${playerData.aussehen}%
+      `;
+    }
+
+    // Quests je nach Alter erzeugen
     function generateQuestsForAge(age) {
-      // Für Alter 0 bis 3: 1-3 zufällige Quests
-      if(age < 0) return; // kein negatives Alter
       playerData.questQueue = [];
 
       if(age <= 3) {
-        const questCount = 1 + Math.floor(Math.random()*3);
+        let questCount = 1 + Math.floor(Math.random()*3);
         for(let i=0; i<questCount; i++) {
           playerData.questQueue.push({
             id: `baby_${i}`,
             text: `Babyquest ${i+1}: Lerne etwas neues.`,
             effect: () => {
-              playerData.glueck = clampStat(playerData.glueck + 1);
-              playerData.gesundheit = clampStat(playerData.gesundheit + 1);
+              modifyStats(1, 1, 0, 0);
+              addEventToTimeline(`Babyquest ${i+1} abgeschlossen.`);
             }
           });
         }
@@ -464,90 +387,104 @@
           id: 'schule',
           text: 'Gehe zur Schule und lerne.',
           effect: () => {
-            playerData.intelligenz = clampStat(playerData.intelligenz + 5);
-            playerData.glueck = clampStat(playerData.glueck + 1);
+            modifyStats(1, 0, 5, 0);
+            addEventToTimeline('Du hast in der Schule gelernt.');
           }
         });
-      } else if(age <= 16) {
         playerData.questQueue.push({
-          id: 'hobby',
-          text: 'Verfolge ein Hobby und habe Spaß.',
+          id: 'spielen',
+          text: 'Spiele mit Freunden draußen.',
           effect: () => {
-            playerData.glueck = clampStat(playerData.glueck + 5);
+            modifyStats(3, 2, 0, 0);
+            addEventToTimeline('Du hast mit Freunden gespielt.');
           }
         });
-      } else if(age <= 20) {
+      } else if(age <= 18) {
         playerData.questQueue.push({
-          id: 'ausbildung_start',
-          text: 'Beginne deine Ausbildung oder dein Studium.',
+          id: 'ausbildung',
+          text: 'Beginne deine Ausbildung oder Schule.',
           effect: () => {
-            playerData.intelligenz = clampStat(playerData.intelligenz + 7);
+            modifyStats(0, 0, 5, 0);
+            addEventToTimeline('Du hast an deiner Ausbildung gearbeitet.');
           }
         });
-      } else if(age > 20) {
         playerData.questQueue.push({
-          id: 'arbeit_karriere',
-          text: 'Arbeite an deiner Karriere.',
+          id: 'freizeit',
+          text: 'Genieße deine Freizeit und Freunde.',
           effect: () => {
-            playerData.glueck = clampStat(playerData.glueck + 2);
-            playerData.gesundheit = clampStat(playerData.gesundheit - 1);
+            modifyStats(4, 0, 0, 0);
+            addEventToTimeline('Du hast deine Freizeit genossen.');
+          }
+        });
+      } else {
+        playerData.questQueue.push({
+          id: 'arbeit',
+          text: 'Arbeite hart, um deinen Lebensunterhalt zu verdienen.',
+          effect: () => {
+            modifyStats(-1, -1, 0, 0);
+            addEventToTimeline('Du hast gearbeitet.');
+          }
+        });
+        playerData.questQueue.push({
+          id: 'partnersuche',
+          text: 'Finde eine Beziehung.',
+          effect: () => {
+            modifyStats(5, 0, 0, 0);
+            addEventToTimeline('Du hast eine Beziehung begonnen.');
+            // Hier kann man noch Beziehung hinzufügen
           }
         });
       }
     }
 
-    // Zeigt die nächste Quest aus der Queue
-    function showNextQuest() {
-      const questDiv = document.getElementById('questContainer');
-      questDiv.innerHTML = '';
+    // UI für Quests
+    function updateQuestUI() {
+      const questContainer = document.getElementById('questContainer');
+      questContainer.innerHTML = '';
       if(playerData.questQueue.length === 0) {
-        questDiv.textContent = 'Keine neuen Quests.';
+        questContainer.innerHTML = '<p>Keine Quests verfügbar.</p>';
         return;
       }
-
-      const nextQuest = playerData.questQueue[0];
-      const p = document.createElement('p');
-      p.textContent = nextQuest.text;
-
-      const btnAccept = document.createElement('button');
-      btnAccept.textContent = 'Quest annehmen';
-      btnAccept.onclick = () => {
-        // Quest Effekt ausführen
-        nextQuest.effect();
-
-        playerData.timeline.push(`Quest erledigt: ${nextQuest.text}`);
-        playerData.questsDone.push(nextQuest.id);
-        playerData.questQueue.shift();
-
-        savePlayerData();
-        renderLifeCenter();
-        showNextQuest();
-      };
-
-      questDiv.appendChild(p);
-      questDiv.appendChild(btnAccept);
+      playerData.questQueue.forEach(q => {
+        const btn = document.createElement('button');
+        btn.textContent = q.text;
+        btn.onclick = () => {
+          q.effect();
+          // Quest entfernen
+          playerData.questQueue = playerData.questQueue.filter(quest => quest.id !== q.id);
+          updateQuestUI();
+          updateStats();
+          updateTimeline();
+          checkGameOver();
+        };
+        questContainer.appendChild(btn);
+      });
     }
 
-    // Buttons Aktionen (einfach Platzhalter für jetzt)
-    document.getElementById('arbeitBtn').addEventListener('click', () => {
-      alert('Du arbeitest heute. (Noch keine detaillierte Umsetzung)');
-    });
-    document.getElementById('ausbildungBtn').addEventListener('click', () => {
-      alert('Du bist in Ausbildung/Schule. (Noch keine detaillierte Umsetzung)');
-    });
-    document.getElementById('freizeitBtn').addEventListener('click', () => {
-      alert('Du hast Freizeit und entspannst dich. (Noch keine detaillierte Umsetzung)');
-    });
+    // Beziehungen anzeigen
+    function showRelationships() {
+      const listDiv = document.getElementById('relationshipsList');
+      const ul = document.getElementById('relationshipsUl');
+      ul.innerHTML = '';
+      playerData.relationships.forEach(rel => {
+        let li = document.createElement('li');
+        li.textContent = `${rel.type}: ${rel.name} (${rel.gender}), Status: ${rel.status}, Sexualität: ${rel.sexualOrientation}`;
+        ul.appendChild(li);
+      });
+      listDiv.style.display = 'block';
+    }
 
-    // Beim Laden versuchen zu laden
-    window.onload = () => {
-      if(loadPlayerData()) {
-        showLifeCenter();
-        renderLifeCenter();
-        generateQuestsForAge(playerData.age);
-        showNextQuest();
+    function hideRelationships() {
+      document.getElementById('relationshipsList').style.display = 'none';
+    }
+
+    // Spielende bei Tod simulieren
+    function checkGameOver() {
+      if(playerData.gesundheit <= 0) {
+        alert('Dein Charakter ist leider gestorben. Spiel vorbei.');
+        location.reload();
       }
-    };
+    }
   </script>
 </body>
 </html>
