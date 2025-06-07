@@ -2,14 +2,14 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Lebenslife</title>
+  <title>Lebenslife – Charakter erstellen</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-r from-blue-100 to-purple-200 min-h-screen text-gray-800">
-  <div class="max-w-6xl mx-auto p-6">
+  <div class="max-w-2xl mx-auto p-6">
     <h1 class="text-4xl font-bold text-center mb-6">Lebenslife</h1>
 
-    <div id="charakterErstellung" class="bg-white shadow-xl rounded-2xl p-6 space-y-4 max-w-2xl mx-auto">
+    <div id="charakterErstellung" class="bg-white shadow-xl rounded-2xl p-6 space-y-4">
       <h2 class="text-2xl font-semibold mb-4">Charakter erstellen</h2>
       <input type="text" id="vorname" placeholder="Vorname" class="w-full p-2 border rounded">
       <input type="text" id="nachname" placeholder="Nachname" class="w-full p-2 border rounded">
@@ -43,74 +43,33 @@
       <label>Aussehen: <span id="aussehenWert">50</span></label>
       <input type="range" min="0" max="100" value="50" id="aussehen" class="w-full">
 
-      <button onclick="charakterErstellen()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full">Starten</button>
-    </div>
-
-    <div id="spielbereich" class="hidden mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-      <!-- Linke Spalte: bisher erlebt -->
-      <div id="ereignisverlauf" class="bg-white shadow-xl rounded-2xl p-4 md:col-span-1">
-        <h2 class="text-xl font-bold mb-2">Bisher erlebt</h2>
-        <div id="verlaufstext" class="text-sm space-y-2"></div>
-      </div>
-
-      <!-- Mitte: Statusanzeige -->
-      <div class="bg-white shadow-xl rounded-2xl p-4 md:col-span-1">
-        <p class="text-lg"><strong>Name:</strong> <span id="anzeigename"></span></p>
-        <p><strong>Alter:</strong> <span id="alter">0</span></p>
-        <p><strong>Ort:</strong> <span id="anzeigeort"></span></p>
-        <p><strong>Gesundheit:</strong> <span id="anzeigegesundheit"></span></p>
-        <p><strong>Zufriedenheit:</strong> <span id="anzeigezufriedenheit"></span></p>
-        <p><strong>Intelligenz:</strong> <span id="anzeigeintelligenz"></span></p>
-        <p><strong>Aussehen:</strong> <span id="anzeigeaussehen"></span></p>
-      </div>
-
-      <!-- Rechte Spalte: Aktionen -->
-      <div class="bg-white shadow-xl rounded-2xl p-4 md:col-span-1">
-        <p class="text-xl font-semibold mb-2">Was möchtest du tun?</p>
-        <div class="space-y-2">
-          <button id="btnAusbildung" onclick="ausbildungStarten()" class="bg-yellow-400 text-white px-4 py-2 rounded w-full disabled:opacity-50">Ausbildung</button>
-          <button id="btnArbeit" onclick="arbeitStarten()" class="bg-blue-500 text-white px-4 py-2 rounded w-full disabled:opacity-50">Arbeit</button>
-          <button onclick="naechstesJahr()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded w-full">Nächstes Jahr</button>
-          <button onclick="zeigeBeziehungen()" class="bg-pink-400 hover:bg-pink-500 text-white px-4 py-2 rounded w-full">Beziehungen</button>
-        </div>
-        <div id="ereignisse" class="mt-4 space-y-2"></div>
-      </div>
+      <button onclick="charakterSpeichern()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full">Speichern & Starten</button>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBLvPbrzgjmJImROwvzmNMiAKgMYIU7KhA",
-      authDomain: "lebenslife-301c0.firebaseapp.com",
-      projectId: "lebenslife-301c0",
-      storageBucket: "lebenslife-301c0.appspot.com",
-      messagingSenderId: "87989027297",
-      appId: "1:87989027297:web:11e4a3d6c29e42ccfdbd17"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const docRef = doc(db, "spielstaende", user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          console.log("Spielstand geladen:", data);
-        }
-      } else {
-        window.location.href = "/login.html";
-      }
-    });
-  </script>
   <script>
-    // ... restlicher Code bleibt unverändert (nicht gezeigt wegen Kürze)
+    function charakterSpeichern() {
+      const daten = {
+        vorname: document.getElementById('vorname').value,
+        nachname: document.getElementById('nachname').value,
+        geburtsland: document.getElementById('geburtsland').value,
+        geburtsort: document.getElementById('geburtsort').value,
+        geschlecht: document.getElementById('geschlecht').value,
+        zufriedenheit: parseInt(document.getElementById('zufriedenheit').value),
+        gesundheit: parseInt(document.getElementById('gesundheit').value),
+        intelligenz: parseInt(document.getElementById('intelligenz').value),
+        aussehen: parseInt(document.getElementById('aussehen').value)
+      };
+
+      localStorage.setItem("charakter", JSON.stringify(daten));
+      window.location.href = "spiel.html";
+    }
+
+    ["zufriedenheit", "gesundheit", "intelligenz", "aussehen"].forEach(id => {
+      const input = document.getElementById(id);
+      const label = document.getElementById(id + "Wert");
+      input.addEventListener("input", () => label.textContent = input.value);
+    });
   </script>
 </body>
 </html>
