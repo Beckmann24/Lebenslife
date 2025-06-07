@@ -1,4 +1,3 @@
-<!-- spiel.html -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -6,25 +5,128 @@
   <title>Lebenslife – Spiel</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gradient-to-r from-green-100 to-blue-100 min-h-screen p-6">
-  <h1 class="text-3xl font-bold mb-4">Willkommen bei Lebenslife</h1>
-  <div id="charakterInfo" class="bg-white p-4 rounded shadow"></div>
+<body class="bg-gradient-to-br from-blue-100 to-purple-100 min-h-screen text-gray-800 font-sans">
+  <div class="max-w-6xl mx-auto py-10 px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Verlauf / Story -->
+    <div class="col-span-1 bg-white rounded-2xl p-4 shadow-lg overflow-y-auto max-h-[80vh]">
+      <h2 class="text-xl font-bold mb-2">Deine Geschichte</h2>
+      <div id="storyLog" class="space-y-2 text-sm text-gray-700">
+        <!-- Hier erscheint die Lebensgeschichte -->
+      </div>
+    </div>
+
+    <!-- Hauptbereich -->
+    <div class="col-span-2 space-y-6">
+      <!-- Header mit Name, Alter & Geld -->
+      <div class="bg-white rounded-2xl shadow-lg p-4 flex flex-col md:flex-row justify-between items-center">
+        <div>
+          <h1 id="spielerName" class="text-2xl font-bold">Name</h1>
+          <p id="spielerAlter">Alter: 0</p>
+        </div>
+        <div class="text-right">
+          <p id="spielerGeld" class="text-green-600 font-bold text-lg">0 €</p>
+        </div>
+      </div>
+
+      <!-- Statistiken -->
+      <div class="bg-white rounded-2xl shadow-lg p-4">
+        <h2 class="text-lg font-semibold mb-2">Werte</h2>
+        <div class="space-y-1">
+          <p>😊 Zufriedenheit <span class="float-right" id="zufriedenheit">0%</span></p>
+          <div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-yellow-400 h-2.5 rounded-full" id="zufriedenheitBar"></div></div>
+
+          <p>❤️ Gesundheit <span class="float-right" id="gesundheit">0%</span></p>
+          <div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-red-400 h-2.5 rounded-full" id="gesundheitBar"></div></div>
+
+          <p>🧠 Intelligenz <span class="float-right" id="intelligenz">0%</span></p>
+          <div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-blue-400 h-2.5 rounded-full" id="intelligenzBar"></div></div>
+
+          <p>💅 Aussehen <span class="float-right" id="aussehen">0%</span></p>
+          <div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-purple-400 h-2.5 rounded-full" id="aussehenBar"></div></div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex flex-wrap gap-4">
+        <button class="flex-1 bg-blue-500 text-white rounded-xl py-3 font-bold" onclick="alterErhoehen()">Alter</button>
+        <button class="flex-1 bg-indigo-500 text-white rounded-xl py-3 font-bold" onclick="zeigeBeziehungen()">Beziehungen</button>
+        <button class="flex-1 bg-teal-500 text-white rounded-xl py-3 font-bold" id="ausbildungBtn">Ausbildung</button>
+        <button class="flex-1 bg-emerald-500 text-white rounded-xl py-3 font-bold" id="arbeitBtn">Arbeit</button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    const daten = JSON.parse(localStorage.getItem("charakter"));
-    if (daten) {
-      document.getElementById("charakterInfo").innerHTML = `
-        <p><strong>Name:</strong> ${daten.vorname} ${daten.nachname}</p>
-        <p><strong>Geburtsort:</strong> ${daten.geburtsort}, ${daten.geburtsland}</p>
-        <p><strong>Geschlecht:</strong> ${daten.geschlecht}</p>
-        <p><strong>Zufriedenheit:</strong> ${daten.zufriedenheit}</p>
-        <p><strong>Gesundheit:</strong> ${daten.gesundheit}</p>
-        <p><strong>Intelligenz:</strong> ${daten.intelligenz}</p>
-        <p><strong>Aussehen:</strong> ${daten.aussehen}</p>
-      `;
-    } else {
-      document.getElementById("charakterInfo").textContent = "Keine Charakterdaten gefunden.";
+    let charakter = JSON.parse(localStorage.getItem("charakter"));
+    let alter = 0;
+    let geld = 0;
+
+    const storyLog = document.getElementById("storyLog");
+
+    const zufallsStory = [
+      `Deine Eltern ${charakter.nachname} haben sich im Studium kennengelernt. Sie sind verheiratet und wohnen in ${charakter.geburtsort}.`,
+      `Dein Vater war Elektriker, deine Mutter Lehrerin. Sie beschlossen ein Kind zu bekommen, um ihr Glück zu teilen.`
+    ];
+
+    const storyEintrag = document.createElement("p");
+    storyEintrag.textContent = zufallsStory[Math.floor(Math.random() * zufallsStory.length)];
+    storyLog.appendChild(storyEintrag);
+
+    function aktualisiereAnzeige() {
+      document.getElementById("spielerName").textContent = `${charakter.vorname} ${charakter.nachname}`;
+      document.getElementById("spielerAlter").textContent = `Alter: ${alter}`;
+      document.getElementById("spielerGeld").textContent = `${geld} €`;
+
+      const werte = ["zufriedenheit", "gesundheit", "intelligenz", "aussehen"];
+      werte.forEach(wert => {
+        const wertValue = charakter[wert];
+        document.getElementById(wert).textContent = `${wertValue}%`;
+        document.getElementById(`${wert}Bar`).style.width = `${wertValue}%`;
+      });
+
+      document.getElementById("arbeitBtn").disabled = alter < 16;
+      document.getElementById("arbeitBtn").classList.toggle("opacity-50", alter < 16);
+      document.getElementById("ausbildungBtn").disabled = alter < 6;
+      document.getElementById("ausbildungBtn").classList.toggle("opacity-50", alter < 6);
     }
+
+    function alterErhoehen() {
+      alter++;
+      charakter.zufriedenheit = Math.max(0, Math.min(100, charakter.zufriedenheit + (Math.random() * 10 - 5)));
+      charakter.gesundheit = Math.max(0, Math.min(100, charakter.gesundheit + (Math.random() * 10 - 5)));
+      charakter.intelligenz = Math.max(0, Math.min(100, charakter.intelligenz + (Math.random() * 10 - 5)));
+      charakter.aussehen = Math.max(0, Math.min(100, charakter.aussehen + (Math.random() * 10 - 5)));
+      geld += Math.floor(Math.random() * 100);
+
+      const eintrag = document.createElement("p");
+      eintrag.innerText = `Mit ${alter} Jahren hast du beschlossen, ${zufallsAktion()}`;
+      storyLog.appendChild(eintrag);
+
+      if (Math.random() < 0.4) {
+        const beziehungsUpdate = document.createElement("p");
+        beziehungsUpdate.innerText = `Dein Vater hat dir ein neues Fahrrad geschenkt.`;
+        storyLog.appendChild(beziehungsUpdate);
+      }
+
+      aktualisiereAnzeige();
+    }
+
+    function zufallsAktion() {
+      const aktionen = [
+        "mehr zu lesen.",
+        "eine neue Sprache zu lernen.",
+        "dein Zimmer umzuräumen.",
+        "mit Freunden zu spielen.",
+        "dich für den Fußballverein anzumelden."
+      ];
+      return aktionen[Math.floor(Math.random() * aktionen.length)];
+    }
+
+    function zeigeBeziehungen() {
+      alert("Du hast eine gute Beziehung zu deinen Eltern.");
+    }
+
+    aktualisiereAnzeige();
   </script>
 </body>
 </html>
