@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Lebenslife</title>
+  <title>Lebenslife mit Quests</title>
   <style>
     body {
       font-family: sans-serif;
@@ -13,7 +13,7 @@
       background: #f0f0f0;
     }
     #leftPanel {
-      width: 25%;
+      width: 30%;
       background: white;
       padding: 15px;
       box-shadow: 0 0 8px rgba(0,0,0,0.1);
@@ -32,7 +32,7 @@
       font-size: 16px;
       padding: 8px;
       margin: 6px 0;
-      width: 200px;
+      width: 220px;
     }
     button.action-button {
       margin: 8px 5px;
@@ -48,6 +48,32 @@
       padding-left: 20px;
       text-align: left;
     }
+    .stat-slider {
+      width: 220px;
+    }
+    .stat-label {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .answer-button {
+      display: block;
+      margin: 6px auto;
+      width: 90%;
+      padding: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: 1px solid #333;
+      background: #eee;
+    }
+    .answer-button:hover {
+      background: #ddd;
+    }
+    .impact-text {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 12px;
+    }
   </style>
 </head>
 <body>
@@ -57,46 +83,67 @@
   </div>
   <div id="mainPanel">
     <h1>Lebenslife</h1>
-    <p>Bitte gib deine Daten ein, um dein Leben zu starten:</p>
-    <input type="text" id="firstNameInput" placeholder="Vorname" /><br />
-    <input type="text" id="lastNameInput" placeholder="Nachname" /><br />
+    <div id="setupPanel">
+      <p>Bitte gib deine Daten ein, um dein Leben zu starten:</p>
+      <input type="text" id="firstNameInput" placeholder="Vorname" /><br />
+      <input type="text" id="lastNameInput" placeholder="Nachname" /><br />
 
-    <label for="countrySelect">Herkunftsland:</label><br />
-    <select id="countrySelect">
-      <option value="" disabled selected>Bitte wählen</option>
-      <option>Deutschland</option>
-      <option>Österreich</option>
-      <option>Schweiz</option>
-      <option>USA</option>
-      <option>Frankreich</option>
-      <option>Italien</option>
-      <option>Spanien</option>
-      <option>Andere</option>
-    </select><br />
+      <label for="countrySelect">Herkunftsland:</label><br />
+      <select id="countrySelect">
+        <option value="" disabled selected>Bitte wählen</option>
+        <option>Deutschland</option>
+        <option>Österreich</option>
+        <option>Schweiz</option>
+        <option>USA</option>
+        <option>Frankreich</option>
+        <option>Italien</option>
+        <option>Spanien</option>
+        <option>Andere</option>
+      </select><br />
 
-    <label for="citySelect">Ort:</label><br />
-    <select id="citySelect">
-      <option value="" disabled selected>Bitte wählen</option>
-      <option>Berlin</option>
-      <option>Hamburg</option>
-      <option>München</option>
-      <option>Köln</option>
-      <option>Frankfurt</option>
-      <option>Andere</option>
-    </select><br />
+      <label for="citySelect">Ort:</label><br />
+      <select id="citySelect">
+        <option value="" disabled selected>Bitte wählen</option>
+        <option>Berlin</option>
+        <option>Hamburg</option>
+        <option>München</option>
+        <option>Köln</option>
+        <option>Frankfurt</option>
+        <option>Andere</option>
+      </select><br />
 
-    <label for="genderSelect">Geschlecht:</label><br />
-    <select id="genderSelect">
-      <option value="" disabled selected>Bitte wählen</option>
-      <option>Männlich</option>
-      <option>Weiblich</option>
-    </select><br />
+      <label for="genderSelect">Geschlecht:</label><br />
+      <select id="genderSelect">
+        <option value="" disabled selected>Bitte wählen</option>
+        <option>Männlich</option>
+        <option>Weiblich</option>
+      </select><br />
 
-    <button onclick="startLife()">Leben starten</button>
-    <p id="status"></p>
+      <h3>Statistik-Verteilung (200% total)</h3>
+      <div>
+        <label class="stat-label">Glücklichkeit: <span id="glueckText">50%</span></label><br />
+        <input type="range" id="glueckSlider" min="0" max="200" value="50" class="stat-slider" />
+      </div>
+      <div>
+        <label class="stat-label">Gesundheit: <span id="gesundheitText">50%</span></label><br />
+        <input type="range" id="gesundheitSlider" min="0" max="200" value="50" class="stat-slider" />
+      </div>
+      <div>
+        <label class="stat-label">Intelligenz: <span id="intelligenzText">50%</span></label><br />
+        <input type="range" id="intelligenzSlider" min="0" max="200" value="50" class="stat-slider" />
+      </div>
+      <div>
+        <label class="stat-label">Aussehen: <span id="aussehenText">50%</span></label><br />
+        <input type="range" id="aussehenSlider" min="0" max="200" value="50" class="stat-slider" />
+      </div>
+      <p><b>Verteilte Punkte: <span id="totalPoints">200</span> / 200</b></p>
+      <p id="statWarning" style="color: red; display:none;">Bitte genau 200% verteilen.</p>
+
+      <button id="startLifeBtn" disabled>Leben starten</button>
+      <p id="status"></p>
+    </div>
   </div>
 
-  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -118,32 +165,105 @@
     let userId = null;
     let playerData = null;
 
-    // Anonym anmelden
-    signInAnonymously(auth)
-      .then(() => {
-        document.getElementById("status").textContent = "Eingeloggt. Du kannst loslegen!";
-      })
-      .catch((error) => {
-        document.getElementById("status").textContent = "Fehler beim Login: " + error.message;
-      });
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        userId = user.uid;
-        console.log("Angemeldet als:", userId);
-
-        // Falls Spielstand existiert, laden
-        const docSnap = await getDoc(doc(db, "spielstaende", userId));
-        if (docSnap.exists()) {
-          playerData = docSnap.data();
-          renderLifeCenter();
-          updateLifeLog();
+    // Quest-Datenbank (Beispiel für Alter 0-3)
+    // Je Alter 1-3 Quests, hier beispielhaft 2 Fragen für Alter 0 und 1
+    const questsByAge = {
+      0: [
+        {
+          question: "Deine Mutter bringt dich zum Arzt, der dich impfen will. Wie verhältst du dich?",
+          answers: [
+            { text: "Den Arzt beißen", impact: { glueck: -10, gesundheit: -20, intelligenz: 0, aussehen: -5 } },
+            { text: "Weinen", impact: { glueck: -5, gesundheit: -10, intelligenz: 0, aussehen: 0 } },
+            { text: "Ruhig bleiben", impact: { glueck: 5, gesundheit: 10, intelligenz: 0, aussehen: 0 } },
+            { text: "Versuchen wegzurennen", impact: { glueck: -15, gesundheit: -15, intelligenz: 0, aussehen: -10 } }
+          ]
+        },
+        {
+          question: "Du lernst gerade laufen. Wie fühlst du dich, wenn du hinfällst?",
+          answers: [
+            { text: "Ich fange an zu lachen", impact: { glueck: 10, gesundheit: 0, intelligenz: 0, aussehen: 0 } },
+            { text: "Ich fange an zu weinen", impact: { glueck: -10, gesundheit: -5, intelligenz: 0, aussehen: 0 } },
+            { text: "Ich versuche es nochmal", impact: { glueck: 5, gesundheit: 0, intelligenz: 5, aussehen: 0 } },
+            { text: "Ich gebe auf", impact: { glueck: -20, gesundheit: 0, intelligenz: -5, aussehen: 0 } }
+          ]
         }
+      ],
+      1: [
+        {
+          question: "Du siehst ein neues Spielzeug. Wie reagierst du?",
+          answers: [
+            { text: "Ich freue mich sehr", impact: { glueck: 15, gesundheit: 0, intelligenz: 0, aussehen: 0 } },
+            { text: "Ich ignoriere es", impact: { glueck: -5, gesundheit: 0, intelligenz: 0, aussehen: 0 } },
+            { text: "Ich nehme es und spiele damit", impact: { glueck: 10, gesundheit: 0, intelligenz: 5, aussehen: 0 } },
+            { text: "Ich schmeiße es weg", impact: { glueck: -10, gesundheit: 0, intelligenz: -5, aussehen: 0 } }
+          ]
+        }
+      ],
+      2: [
+        {
+          question: "Dein bester Freund lädt dich zum Spielen ein. Was machst du?",
+          answers: [
+            { text: "Ich gehe mit", impact: { glueck: 20, gesundheit: 0, intelligenz: 0, aussehen: 0 } },
+            { text: "Ich bleibe zuhause", impact: { glueck: -10, gesundheit: 0, intelligenz: 0, aussehen: 0 } },
+            { text: "Ich frage meine Eltern", impact: { glueck: 5, gesundheit: 0, intelligenz: 5, aussehen: 0 } },
+            { text: "Ich ignoriere die Einladung", impact: { glueck: -15, gesundheit: 0, intelligenz: -5, aussehen: 0 } }
+          ]
+        }
+      ],
+      3: [
+        {
+          question: "Du möchtest ein neues Kleidungsstück tragen, das dir nicht gefällt. Was tust du?",
+          answers: [
+            { text: "Ich trage es trotzdem", impact: { glueck: 5, gesundheit: 0, intelligenz: 0, aussehen: 10 } },
+            { text: "Ich weigere mich", impact: { glueck: -5, gesundheit: 0, intelligenz: 0, aussehen: -10 } },
+            { text: "Ich frage jemanden um Rat", impact: { glueck: 10, gesundheit: 0, intelligenz: 5, aussehen: 5 } },
+            { text: "Ich wechsle das Kleidungsstück", impact: { glueck: 15, gesundheit: 0, intelligenz: 0, aussehen: 15 } }
+          ]
+        }
+      ]
+    };
+
+    // UI Elemente für Sliders
+    const glueckSlider = document.getElementById("glueckSlider");
+    const gesundheitSlider = document.getElementById("gesundheitSlider");
+    const intelligenzSlider = document.getElementById("intelligenzSlider");
+    const aussehenSlider = document.getElementById("aussehenSlider");
+    const glueckText = document.getElementById("glueckText");
+    const gesundheitText = document.getElementById("gesundheitText");
+    const intelligenzText = document.getElementById("intelligenzText");
+    const aussehenText = document.getElementById("aussehenText");
+    const totalPointsText = document.getElementById("totalPoints");
+    const statWarning = document.getElementById("statWarning");
+    const startLifeBtn = document.getElementById("startLifeBtn");
+
+    // Sliders Update
+    function updateSliders() {
+      const g = parseInt(glueckSlider.value);
+      const gs = parseInt(gesundheitSlider.value);
+      const i = parseInt(intelligenzSlider.value);
+      const a = parseInt(aussehenSlider.value);
+      const total = g + gs + i + a;
+      glueckText.textContent = g + "%";
+      gesundheitText.textContent = gs + "%";
+      intelligenzText.textContent = i + "%";
+      aussehenText.textContent = a + "%";
+      totalPointsText.textContent = total;
+      if (total === 200) {
+        statWarning.style.display = "none";
+        startLifeBtn.disabled = false;
+      } else {
+        statWarning.style.display = "block";
+        startLifeBtn.disabled = true;
       }
+    }
+
+    [glueckSlider, gesundheitSlider, intelligenzSlider, aussehenSlider].forEach(slider => {
+      slider.addEventListener("input", updateSliders);
     });
 
-    // Starten des Lebens
-    window.startLife = async function () {
+    updateSliders();
+
+    startLifeBtn.addEventListener("click", async () => {
       const firstName = document.getElementById("firstNameInput").value.trim();
       const lastName = document.getElementById("lastNameInput").value.trim();
       const country = document.getElementById("countrySelect").value;
@@ -155,23 +275,8 @@
         return;
       }
 
-      // Elternstatus zufällig
-      const randStatus = Math.random();
-      let parentsStatus;
-      if (randStatus < 0.7) parentsStatus = "verheiratet";
-      else if (randStatus < 0.8) parentsStatus = "zusammen, unverheiratet";
-      else if (randStatus < 0.95) parentsStatus = "getrennt";
-      else parentsStatus = "geschieden";
-
-      // Elternsexualität 10% schwul, 10% lesbisch, sonst hetero
-      const randSex = Math.random();
-      let parentsSexuality = "hetero";
-      if (randSex < 0.1) parentsSexuality = "schwul";
-      else if (randSex < 0.2) parentsSexuality = "lesbisch";
-
-      // Elternnamen vergeben
-      const fatherLastName = (parentsSexuality === "schwul" || parentsStatus === "zusammen, unverheiratet" || parentsStatus === "getrennt" || parentsStatus === "geschieden") ? lastName : lastName;
-      const motherLastName = (parentsSexuality === "schwul") ? null : (parentsStatus === "verheiratet" ? lastName : null);
+      // Erzeuge Eltern mit Wahrscheinlichkeiten und Namen/Nachnamen etc
+      const parents = generateParents(lastName);
 
       playerData = {
         firstName,
@@ -180,166 +285,147 @@
         city,
         gender,
         age: 0,
-        health: 100,
-        happiness: 50,
-        lifeLog: ["Du wurdest geboren."],
-        parents: {
-          status: parentsStatus,
-          sexuality: parentsSexuality,
-          father: { firstName: "Hans", lastName: fatherLastName },
-          mother: parentsSexuality === "schwul" ? null : { firstName: "Maria", lastName: motherLastName }
-        }
+        happiness: parseInt(glueckSlider.value),
+        health: parseInt(gesundheitSlider.value),
+        intelligence: parseInt(intelligenzSlider.value),
+        appearance: parseInt(aussehenSlider.value),
+        lifeLog: [`Willkommen, ${firstName} ${lastName}!`],
+        parents,
+        questsDone: [],
+        questQueue: [],
       };
 
       await savePlayerData();
       renderLifeCenter();
-      updateLifeLog();
-    };
+    });
 
-    // Speichern des Spielstandes
-    async function savePlayerData() {
-      try {
-        await setDoc(doc(db, "spielstaende", userId), playerData);
-      } catch (e) {
-        alert("Fehler beim Speichern: " + e.message);
+    // Eltern erzeugen
+    function generateParents(playerLastName) {
+      // Status der Eltern (Verheiratet, Zusammen, Getrennt, Geschieden)
+      const rand = Math.random() * 100;
+      let status = "";
+      if (rand <= 70) status = "verheiratet";
+      else if (rand <= 80) status = "zusammen";
+      else if (rand <= 95) status = "getrennt";
+      else status = "geschieden";
+
+      // 10% schwule Eltern, 10% lesbische Eltern, Rest hetero
+      let sexuality = "hetero";
+      const sexRand = Math.random() * 100;
+      if (sexRand < 10) sexuality = "schwul";
+      else if (sexRand < 20) sexuality = "lesbisch";
+
+      // Elternobjekt
+      const parents = { status, sexuality };
+
+      if (sexuality === "schwul") {
+        // zwei Männer
+        parents.father = { firstName: "Hans", lastName: playerLastName, gender: "Männlich", sexuality: "hetero", age: randomParentAge() };
+        parents.father2 = { firstName: "Peter", lastName: playerLastName, gender: "Männlich", sexuality: "hetero", age: randomParentAge() };
+      } else if (sexuality === "lesbisch") {
+        // zwei Frauen
+        parents.mother = { firstName: "Maria", lastName: playerLastName, gender: "Weiblich", sexuality: "hetero", age: randomParentAge() };
+        parents.mother2 = { firstName: "Anna", lastName: playerLastName, gender: "Weiblich", sexuality: "hetero", age: randomParentAge() };
+      } else {
+        // hetero Eltern
+        // Mutter bekommt zufälligen Nachnamen, Vater immer der gleiche wie Kind
+        parents.father = { firstName: "Michael", lastName: playerLastName, gender: "Männlich", sexuality: "hetero", age: randomParentAge() };
+        let motherLastName = playerLastName;
+        if (status !== "verheiratet") motherLastName = randomLastName();
+        parents.mother = { firstName: "Sabine", lastName: motherLastName, gender: "Weiblich", sexuality: "hetero", age: randomParentAge() };
       }
+
+      return parents;
     }
 
-    // Zufalls-Geschlecht
-    function randomGender() {
-      return Math.random() < 0.5 ? "Männlich" : "Weiblich";
+    function randomParentAge() {
+      return Math.floor(30 + Math.random() * 20);
     }
 
-    // Zufallsalter für Beziehungen (30–60)
-    function randomAge(min = 30, max = 60) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
+    function randomLastName() {
+      const names = ["Schmidt", "Müller", "Weber", "Schneider", "Fischer"];
+      return names[Math.floor(Math.random() * names.length)];
     }
 
-    // Sexualität: 80% hetero, 10% homosexuell, 10% bisexuell
-    function randomSexuality() {
-      const rnd = Math.random();
-      if (rnd < 0.8) return "hetero";
-      if (rnd < 0.9) return "homosexuell";
-      return "bisexuell";
-    }
-
-    // Hauptansicht rendern
+    // Render Life Center mit Buttons und Lebenslog
     function renderLifeCenter() {
-      if (!playerData) return;
+      const mainPanel = document.getElementById("mainPanel");
+      mainPanel.innerHTML = `
+        <h2>Lebensschaltzentrale</h2>
+        <p>Alter: ${playerData.age}</p>
+        <p>Name: ${playerData.firstName} ${playerData.lastName}</p>
+        <p>Glücklichkeit: ${playerData.happiness}% Gesundheit: ${playerData.health}% Intelligenz: ${playerData.intelligence}% Aussehen: ${playerData.appearance}%</p>
 
-      const workDisabled = playerData.age < 16;
-      let studyDisabled = false;
-      let studyLabel = "Ausbildung";
-
-      if (playerData.age < 3) {
-        studyDisabled = true;
-        studyLabel = "Ausbildung (ab 3 Jahre)";
-      } else if (playerData.age >= 3 && playerData.age < 6) {
-        studyLabel = "Kindergarten";
-      }
-
-      const leisureDisabled = playerData.age < 3;
-
-      document.getElementById("mainPanel").innerHTML = `
-        <h1>Willkommen, ${playerData.firstName} ${playerData.lastName}!</h1>
-        <p>Alter: ${playerData.age} | Gesundheit: ${playerData.health} | Glück: ${playerData.happiness}</p>
-
-        <button class="action-button" onclick="work()" ${workDisabled ? "disabled" : ""}>Arbeit</button>
-        <button class="action-button" onclick="study()" ${studyDisabled ? "disabled" : ""}>${studyLabel}</button>
-        <button class="action-button" onclick="leisure()" ${leisureDisabled ? "disabled" : ""}>Freizeit</button>
+        <button class="action-button" onclick="work()" ${playerData.age < 16 ? "disabled" : ""}>Arbeit</button>
+        <button class="action-button" onclick="study()" ${playerData.age < 3 ? "disabled" : ""}>Ausbildung</button>
+        <button class="action-button" onclick="leisure()" ${playerData.age < 3 ? "disabled" : ""}>Freizeit</button>
         <button class="action-button" onclick="relationships()">Beziehungen</button>
         <button class="action-button" onclick="showStats()">Stats anzeigen</button>
         <button class="action-button" onclick="ageUp()">+ 1 Jahr älter</button>
 
         <p id="actionStatus"></p>
         <div id="relationsList"></div>
+        <div id="questContainer"></div>
       `;
 
       updateLifeLog();
-    }
 
-    // Lebensereignisse aktualisieren
-    function updateLifeLog() {
-      if (!playerData) return;
-      const logDiv = document.getElementById("lifeLog");
-      logDiv.innerHTML = playerData.lifeLog.map(entry => `<p>${entry}</p>`).join("");
-    }
-
-    // Beziehungen anzeigen
-    window.relationships = function () {
-      if (!playerData) return;
-      const relationsDiv = document.getElementById("relationsList");
-      const p = playerData.parents;
-
-      function relationHtml(name, lastname, gender, age, sexuality) {
-        return `<p><strong>${name} ${lastname ? lastname : ""}</strong><br>
-          Geschlecht: ${gender}<br>
-          Alter: ${age} Jahre<br>
-          Sexualität: ${sexuality}</p>`;
-      }
-
-      let html = "<h3>Deine Eltern:</h3>";
-
-      if (p.sexuality === "schwul") {
-        // Zwei Väter
-        html += relationHtml("Hans", playerData.lastName, "Männlich", randomAge(), randomSexuality());
-        html += relationHtml("Peter", playerData.lastName, "Männlich", randomAge(), randomSexuality());
-        html += `<p>Elternstatus: ${p.status}</p>`;
-      } else if (p.sexuality === "lesbisch") {
-        // Zwei Mütter
-        html += relationHtml("Maria", playerData.lastName, "Weiblich", randomAge(), randomSexuality());
-        html += relationHtml("Anna", playerData.lastName, "Weiblich", randomAge(), randomSexuality());
-        html += `<p>Elternstatus: ${p.status}</p>`;
+      // Falls Alter <= 3, dann Quest starten
+      if (playerData.age <= 3) {
+        if (!playerData.questQueue.length) {
+          // 1-3 Quests zufällig ziehen
+          const questsThisAge = questsByAge[playerData.age] || [];
+          const numQuests = 1 + Math.floor(Math.random() * 3);
+          // Mische und nimm numQuests oder so viele wie vorhanden
+          const shuffled = questsThisAge.sort(() => 0.5 - Math.random());
+          playerData.questQueue = shuffled.slice(0, Math.min(numQuests, questsThisAge.length));
+          playerData.questsDone = [];
+          savePlayerData();
+        }
+        showNextQuest();
       } else {
-        // Hetero Eltern
-        if (p.mother) html += relationHtml(p.mother.firstName, p.mother.lastName, "Weiblich", randomAge(), randomSexuality());
-        if (p.father) html += relationHtml(p.father.firstName, p.father.lastName, "Männlich", randomAge(), randomSexuality());
-        html += `<p>Elternstatus: ${p.status}</p>`;
+        document.getElementById("questContainer").innerHTML = "";
       }
+    }
 
-      relationsDiv.innerHTML = html;
-    };
+    // Quest anzeigen und Antwortmöglichkeiten
+    function showNextQuest() {
+      if (!playerData.questQueue.length) {
+        document.getElementById("questContainer").innerHTML = "<p>Keine Quests mehr für dieses Alter.</p>";
+        return;
+      }
+      const currentQuest = playerData.questQueue[0];
+      let html = `<div class="quest-question"><strong>${currentQuest.question}</strong></div><ul>`;
+      currentQuest.answers.forEach((answer, index) => {
+        html += `<li><button onclick="answerQuest(${index})">${answer.text} <br><small>Auswirkungen: Glücklichkeit ${answer.impact.glueck > 0 ? '+' : ''}${answer.impact.glueck}%, Gesundheit ${answer.impact.gesundheit > 0 ? '+' : ''}${answer.impact.gesundheit}%, Intelligenz ${answer.impact.intelligenz > 0 ? '+' : ''}${answer.impact.intelligenz}%, Aussehen ${answer.impact.aussehen > 0 ? '+' : ''}${answer.impact.aussehen}%</small></button></li>`;
+      });
+      html += "</ul>";
+      document.getElementById("questContainer").innerHTML = html;
+    }
 
-    // Aktionen (Dummy, können erweitert werden)
-    window.work = async function () {
-      playerData.lifeLog.push(`Im Alter von ${playerData.age} hast du gearbeitet.`);
-      playerData.happiness = Math.min(playerData.happiness + 2, 100);
-      await savePlayerData();
-      updateLifeLog();
-      document.getElementById("actionStatus").textContent = "Du hast gearbeitet.";
-    };
+    // Quest beantworten und Stats anpassen
+    function answerQuest(answerIndex) {
+      const currentQuest = playerData.questQueue.shift();
+      const answer = currentQuest.answers[answerIndex];
 
-    window.study = async function () {
-      let activity = "Ausbildung";
-      if (playerData.age >= 3 && playerData.age < 6) activity = "Kindergarten";
+      // Stats anpassen
+      playerData.happiness = clampStat(playerData.happiness + answer.impact.glueck);
+      playerData.health = clampStat(playerData.health + answer.impact.gesundheit);
+      playerData.intelligence = clampStat(playerData.intelligence + answer.impact.intelligenz);
+      playerData.appearance = clampStat(playerData.appearance + answer.impact.aussehen);
 
-      playerData.lifeLog.push(`Im Alter von ${playerData.age} hast du den ${activity} besucht.`);
-      playerData.happiness = Math.min(playerData.happiness + 3, 100);
-      await savePlayerData();
-      updateLifeLog();
-      document.getElementById("actionStatus").textContent = `Du hast ${activity} gemacht.`;
-    };
+      playerData.questsDone.push({ question: currentQuest.question, answer: answer.text, impact: answer.impact });
 
-    window.leisure = async function () {
-      playerData.lifeLog.push(`Im Alter von ${playerData.age} hast du Freizeit genossen.`);
-      playerData.happiness = Math.min(playerData.happiness + 5, 100);
-      await savePlayerData();
-      updateLifeLog();
-      document.getElementById("actionStatus").textContent = "Du hast Freizeit gehabt.";
-    };
-
-    window.showStats = function () {
-      alert(`Name: ${playerData.firstName} ${playerData.lastName}\nAlter: ${playerData.age}\nGesundheit: ${playerData.health}\nGlück: ${playerData.happiness}`);
-    };
-
-    // +1 Jahr alt werden und speichern
-    window.ageUp = async function () {
-      playerData.age++;
-      playerData.lifeLog.push(`Du bist nun ${playerData.age} Jahre alt.`);
-      await savePlayerData();
+      savePlayerData();
       renderLifeCenter();
-      updateLifeLog();
-    };
+    }
+
+    // Stats auf 0-200% begrenzen
+    function clampStat(value) {
+      if (value < 0) return 0;
+      if (value > 200) return 200;
+      return value;
+    }
   </script>
 </body>
 </html>
