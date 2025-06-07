@@ -77,6 +77,7 @@
     let ort = "";
     let nachname = "";
     let eltern = [];
+    let eigenschaften = {};
 
     function charakterErstellen() {
       name = document.getElementById('vorname').value;
@@ -85,10 +86,12 @@
       const geburtsland = document.getElementById('geburtsland').value;
       const geschlecht = document.getElementById('geschlecht').value;
 
-      const zufriedenheit = parseInt(document.getElementById('zufriedenheit').value);
-      const gesundheit = parseInt(document.getElementById('gesundheit').value);
-      const intelligenz = parseInt(document.getElementById('intelligenz').value);
-      const aussehen = parseInt(document.getElementById('aussehen').value);
+      eigenschaften = {
+        zufriedenheit: parseInt(document.getElementById('zufriedenheit').value),
+        gesundheit: parseInt(document.getElementById('gesundheit').value),
+        intelligenz: parseInt(document.getElementById('intelligenz').value),
+        aussehen: parseInt(document.getElementById('aussehen').value)
+      };
 
       eltern = [
         { name: "Anna " + nachname, beziehung: "Mutter" },
@@ -97,10 +100,10 @@
 
       document.getElementById("anzeigename").textContent = name + " " + nachname;
       document.getElementById("anzeigeort").textContent = ort + ", " + geburtsland;
-      document.getElementById("anzeigegesundheit").textContent = gesundheit;
-      document.getElementById("anzeigezufriedenheit").textContent = zufriedenheit;
-      document.getElementById("anzeigeintelligenz").textContent = intelligenz;
-      document.getElementById("anzeigeaussehen").textContent = aussehen;
+      document.getElementById("anzeigegesundheit").textContent = eigenschaften.gesundheit;
+      document.getElementById("anzeigezufriedenheit").textContent = eigenschaften.zufriedenheit;
+      document.getElementById("anzeigeintelligenz").textContent = eigenschaften.intelligenz;
+      document.getElementById("anzeigeaussehen").textContent = eigenschaften.aussehen;
 
       document.getElementById("charakterErstellung").classList.add("hidden");
       document.getElementById("spielbereich").classList.remove("hidden");
@@ -130,7 +133,7 @@
       const zufallsEreignis = fragen[Math.floor(Math.random() * fragen.length)];
       const ereignisDiv = document.createElement("div");
       ereignisDiv.className = "border p-2 rounded bg-gray-50";
-      
+
       const frageEl = document.createElement("p");
       frageEl.textContent = zufallsEreignis.frage;
       ereignisDiv.appendChild(frageEl);
