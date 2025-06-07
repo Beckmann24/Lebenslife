@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>TextLife</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 100px;
+    }
+    input, button {
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧬 TextLife</h1>
+  <p>Gib deinen Namen ein, um dein Leben zu starten:</p>
+
+  <input type="text" id="nameInput" placeholder="Dein Name" />
+  <br />
+  <button onclick="startLife()">Leben starten</button>
+
+  <p id="status"></p>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBgM3QJcj4WnOM9KcTikJI-YXF7iTiUNJI",
+      authDomain: "lebenslife-301c0.firebaseapp.com",
+      projectId: "lebenslife-301c0",
+      storageBucket: "lebenslife-301c0.appspot.com",
+      messagingSenderId: "638829520763",
+      appId: "1:638829520763:web:cff41bdf58c0b8536cffde"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let userId = null;
+
+    // Automatisch anonym einloggen
+    signInAnonymously(auth)
+      .then(() => {
+        document.getElementById("status").textContent = "Eingeloggt. Du kannst loslegen!";
+      })
+      .catch((error) => {
+        document.getElementById("status").textContent = "Fehler beim Login: " + error.message;
+      });
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        userId = user.uid;
+        console.log("Angemeldet als:", userId);
+      }
+    });
+
+    window.startLife = async function () {
+      const name = document.getElementById("nameInput").value.trim();
+      if (!name) {
+        alert("Bitte gib einen Namen ein.");
+        return;
+      }
+
+      const playerData = {
+        name,
+        age: 0,
+        health: 100,
+        happiness: 50,
+        createdAt: new Date()
+      };
+
+      await setDoc(doc(db, "spielstaende", userId), playerData);
+
+      document.body.innerHTML = `
+        <h1>Willkommen, ${name}!</h1>
+        <p>Du bist gerade geboren worden.</p>
+        <p>Alter: 0 | Gesundheit: 100 | Glück: 50</p>
+      `;
+    };
+  </script>
+</body>
+</html>
