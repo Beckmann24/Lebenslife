@@ -2,195 +2,180 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>TextLife</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #e0f7fa, #f1f8e9);
-      color: #333;
-      padding: 20px;
-    }
-    h2, h3 {
-      color: #2e7d32;
-    }
-    input, select, button {
-      margin: 6px 0;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1em;
-    }
-    button {
-      background-color: #4caf50;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    button:hover:not(:disabled) {
-      background-color: #388e3c;
-    }
-    button:disabled {
-      background-color: #a5d6a7;
-      cursor: not-allowed;
-    }
-    #lifeCenter, #relationshipsList {
-      margin-top: 30px;
-    }
-    #statsDisplay {
-      background-color: #e8f5e9;
-      padding: 10px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
-    #timeline {
-      background-color: #ffffff;
-      margin-top: 10px;
-      max-height: 200px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-    #questContainer button {
-      display: block;
-      margin: 6px 0;
-      width: 100%;
-    }
-    #characterCreation {
-      background-color: #ffffffcc;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      max-width: 600px;
-      margin: auto;
-    }
-    #lifeCenter button {
-      margin-right: 5px;
-      margin-bottom: 5px;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      background: #f9fbe7;
-      margin: 5px 0;
-      padding: 8px;
-      border-radius: 5px;
-    }
-  </style>
+  <title>Lebenslife</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div id="characterCreation">
-    <h2>Willkommen bei TextLife</h2>
-    <label>Name: <input type="text" id="name" /></label><br>
-    <label>Alter: <input type="number" id="age" value="0" min="0" max="100" /></label><br>
-    <label>Geschlecht:
-      <select id="gender">
-        <option value="m">Männlich</option>
-        <option value="w">Weiblich</option>
-        <option value="d">Divers</option>
+<body class="bg-gradient-to-r from-blue-100 to-purple-200 min-h-screen text-gray-800">
+  <div class="max-w-2xl mx-auto p-6">
+    <h1 class="text-4xl font-bold text-center mb-6">Lebenslife</h1>
+
+    <div id="charakterErstellung" class="bg-white shadow-xl rounded-2xl p-6 space-y-4">
+      <h2 class="text-2xl font-semibold mb-4">Charakter erstellen</h2>
+      <input type="text" id="vorname" placeholder="Vorname" class="w-full p-2 border rounded">
+      <input type="text" id="nachname" placeholder="Nachname" class="w-full p-2 border rounded">
+
+      <select id="geburtsland" class="w-full p-2 border rounded">
+        <option>Deutschland</option>
+        <option>Österreich</option>
+        <option>Schweiz</option>
       </select>
-    </label><br>
-    <button onclick="startGame()">Spiel starten</button>
-  </div>
+      <select id="geburtsort" class="w-full p-2 border rounded">
+        <option>Berlin</option>
+        <option>Wien</option>
+        <option>Zürich</option>
+      </select>
 
-  <div id="game" style="display:none">
-    <h2>Leben von <span id="charName"></span></h2>
-    <div id="statsDisplay">
-      <p>Alter: <span id="charAge"></span></p>
-      <p>Geschlecht: <span id="charGender"></span></p>
+      <select id="geschlecht" class="w-full p-2 border rounded">
+        <option>Männlich</option>
+        <option>Weiblich</option>
+        <option>Divers</option>
+      </select>
+
+      <label>Zufriedenheit: <span id="zufriedenheitWert">50</span></label>
+      <input type="range" min="0" max="100" value="50" id="zufriedenheit" class="w-full">
+
+      <label>Gesundheit: <span id="gesundheitWert">50</span></label>
+      <input type="range" min="0" max="100" value="50" id="gesundheit" class="w-full">
+
+      <label>Intelligenz: <span id="intelligenzWert">50</span></label>
+      <input type="range" min="0" max="100" value="50" id="intelligenz" class="w-full">
+
+      <label>Aussehen: <span id="aussehenWert">50</span></label>
+      <input type="range" min="0" max="100" value="50" id="aussehen" class="w-full">
+
+      <button onclick="charakterErstellen()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full">Starten</button>
     </div>
 
-    <div id="lifeCenter">
-      <h3>Aktionen</h3>
-      <button onclick="doAgeUp()">Älter werden</button>
-      <button id="schoolBtn" onclick="doSchool()">Ausbildung</button>
-      <button id="workBtn" onclick="doWork()">Arbeit</button>
-    </div>
+    <div id="spielbereich" class="hidden mt-6 space-y-4">
+      <div class="bg-white shadow-xl rounded-2xl p-4">
+        <p class="text-lg"><strong>Name:</strong> <span id="anzeigename"></span></p>
+        <p><strong>Alter:</strong> <span id="alter">0</span></p>
+        <p><strong>Ort:</strong> <span id="anzeigeort"></span></p>
+        <p><strong>Gesundheit:</strong> <span id="anzeigegesundheit"></span></p>
+        <p><strong>Zufriedenheit:</strong> <span id="anzeigezufriedenheit"></span></p>
+        <p><strong>Intelligenz:</strong> <span id="anzeigeintelligenz"></span></p>
+        <p><strong>Aussehen:</strong> <span id="anzeigeaussehen"></span></p>
+      </div>
 
-    <div id="questContainer">
-      <h3>Ereignis</h3>
-      <p id="questText">—</p>
-      <div id="questChoices"></div>
-    </div>
+      <div class="bg-white shadow-xl rounded-2xl p-4">
+        <p class="text-xl font-semibold mb-2">Was möchtest du tun?</p>
+        <div class="space-y-2">
+          <button id="btnAusbildung" onclick="ausbildungStarten()" class="bg-yellow-400 text-white px-4 py-2 rounded w-full disabled:opacity-50">Ausbildung</button>
+          <button id="btnArbeit" onclick="arbeitStarten()" class="bg-blue-500 text-white px-4 py-2 rounded w-full disabled:opacity-50">Arbeit</button>
+          <button onclick="naechstesJahr()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded w-full">Nächstes Jahr</button>
+          <button onclick="zeigeBeziehungen()" class="bg-pink-400 hover:bg-pink-500 text-white px-4 py-2 rounded w-full">Beziehungen</button>
+        </div>
+      </div>
 
-    <h3>Lebenslauf</h3>
-    <div id="timeline"></div>
+      <div id="ereignisse" class="bg-white shadow-xl rounded-2xl p-4 space-y-2"></div>
+    </div>
   </div>
 
   <script>
-    let character = { name: '', age: 0, gender: '', timeline: [] };
+    let alter = 0;
+    let name = "";
+    let ort = "";
+    let nachname = "";
+    let eltern = [];
 
-    function startGame() {
-      character.name = document.getElementById('name').value;
-      character.age = parseInt(document.getElementById('age').value);
-      character.gender = document.getElementById('gender').value;
-      character.timeline.push(`Du wurdest geboren als ${character.name}.`);
-      updateUI();
-      document.getElementById('characterCreation').style.display = 'none';
-      document.getElementById('game').style.display = 'block';
-    }
+    function charakterErstellen() {
+      name = document.getElementById('vorname').value;
+      nachname = document.getElementById('nachname').value;
+      ort = document.getElementById('geburtsort').value;
+      const geburtsland = document.getElementById('geburtsland').value;
+      const geschlecht = document.getElementById('geschlecht').value;
 
-    function updateUI() {
-      document.getElementById('charName').innerText = character.name;
-      document.getElementById('charAge').innerText = character.age;
-      document.getElementById('charGender').innerText = character.gender;
-      document.getElementById('timeline').innerHTML = character.timeline.map(t => `<p>${t}</p>`).join('');
+      const zufriedenheit = parseInt(document.getElementById('zufriedenheit').value);
+      const gesundheit = parseInt(document.getElementById('gesundheit').value);
+      const intelligenz = parseInt(document.getElementById('intelligenz').value);
+      const aussehen = parseInt(document.getElementById('aussehen').value);
 
-      document.getElementById('schoolBtn').disabled = character.age < 6;
-      document.getElementById('workBtn').disabled = character.age < 16;
-    }
-
-    function doAgeUp() {
-      character.age++;
-      character.timeline.push(`Du bist jetzt ${character.age} Jahre alt.`);
-      updateUI();
-      generateQuest();
-    }
-
-    function doSchool() {
-      character.timeline.push("Du gehst zur Schule oder Ausbildung.");
-      updateUI();
-    }
-
-    function doWork() {
-      character.timeline.push("Du arbeitest.");
-      updateUI();
-    }
-
-    function generateQuest() {
-      const quests = [
-        {
-          text: "Ein Kind auf dem Spielplatz fragt, ob du mitspielen willst. Was tust du?",
-          choices: ["Mitspielen", "Ablehnen"]
-        },
-        {
-          text: "Du findest 10€. Was machst du?",
-          choices: ["Behalten", "Abgeben"]
-        },
-        {
-          text: "Ein Freund möchte, dass du bei einem Streich mitmachst. Was machst du?",
-          choices: ["Mitmachen", "Nein sagen"]
-        }
+      eltern = [
+        { name: "Anna " + nachname, beziehung: "Mutter" },
+        { name: "Thomas " + nachname, beziehung: "Vater" }
       ];
-      const quest = quests[Math.floor(Math.random() * quests.length)];
-      document.getElementById('questText').innerText = quest.text;
-      const choiceDiv = document.getElementById('questChoices');
-      choiceDiv.innerHTML = '';
-      quest.choices.forEach(choice => {
-        const btn = document.createElement('button');
-        btn.innerText = choice;
-        btn.onclick = () => {
-          character.timeline.push(`Entscheidung: ${choice}.`);
-          document.getElementById('questText').innerText = '—';
-          choiceDiv.innerHTML = '';
-          updateUI();
-        };
-        choiceDiv.appendChild(btn);
-      });
+
+      document.getElementById("anzeigename").textContent = name + " " + nachname;
+      document.getElementById("anzeigeort").textContent = ort + ", " + geburtsland;
+      document.getElementById("anzeigegesundheit").textContent = gesundheit;
+      document.getElementById("anzeigezufriedenheit").textContent = zufriedenheit;
+      document.getElementById("anzeigeintelligenz").textContent = intelligenz;
+      document.getElementById("anzeigeaussehen").textContent = aussehen;
+
+      document.getElementById("charakterErstellung").classList.add("hidden");
+      document.getElementById("spielbereich").classList.remove("hidden");
+
+      updateButtons();
     }
+
+    function naechstesJahr() {
+      alter++;
+      document.getElementById("alter").textContent = alter;
+      updateButtons();
+      zeigeEreignis();
+    }
+
+    function updateButtons() {
+      document.getElementById("btnAusbildung").disabled = alter < 6;
+      document.getElementById("btnArbeit").disabled = alter < 16;
+    }
+
+    function zeigeEreignis() {
+      const fragen = [
+        { frage: "Du hast ein neues Spielzeug bekommen. Was machst du?", antworten: ["Spielen", "Teilen", "Ignorieren"] },
+        { frage: "Du hast Geburtstag! Wie willst du feiern?", antworten: ["Mit Freunden", "Mit Familie", "Gar nicht"] },
+        { frage: "In der Schule bekommst du eine schlechte Note. Was machst du?", antworten: ["Lernen", "Lehrer fragen", "Nichts"] }
+      ];
+
+      const zufallsEreignis = fragen[Math.floor(Math.random() * fragen.length)];
+      const ereignisDiv = document.createElement("div");
+      ereignisDiv.className = "border p-2 rounded bg-gray-50";
+      
+      const frageEl = document.createElement("p");
+      frageEl.textContent = zufallsEreignis.frage;
+      ereignisDiv.appendChild(frageEl);
+
+      zufallsEreignis.antworten.forEach(a => {
+        const btn = document.createElement("button");
+        btn.textContent = a;
+        btn.className = "bg-gray-200 hover:bg-gray-300 px-3 py-1 m-1 rounded";
+        ereignisDiv.appendChild(btn);
+      });
+
+      document.getElementById("ereignisse").prepend(ereignisDiv);
+    }
+
+    function ausbildungStarten() {
+      const msg = `Mit ${alter} Jahren beginnst du deine Ausbildung.`;
+      document.getElementById("ereignisse").prepend(erstelleNachricht(msg));
+    }
+
+    function arbeitStarten() {
+      const msg = `Mit ${alter} Jahren beginnst du zu arbeiten.`;
+      document.getElementById("ereignisse").prepend(erstelleNachricht(msg));
+    }
+
+    function zeigeBeziehungen() {
+      const beziehungDiv = document.createElement("div");
+      beziehungDiv.className = "border p-2 rounded bg-pink-100";
+      beziehungDiv.innerHTML = `<strong>Beziehungen:</strong><ul>` +
+        eltern.map(e => `<li>${e.beziehung}: ${e.name}</li>`).join('') + '</ul>';
+      document.getElementById("ereignisse").prepend(beziehungDiv);
+    }
+
+    function erstelleNachricht(text) {
+      const div = document.createElement("div");
+      div.className = "border p-2 rounded bg-green-100";
+      div.textContent = text;
+      return div;
+    }
+
+    // Slider Werte anzeigen
+    ["zufriedenheit", "gesundheit", "intelligenz", "aussehen"].forEach(id => {
+      const input = document.getElementById(id);
+      const label = document.getElementById(id + "Wert");
+      input.addEventListener("input", () => label.textContent = input.value);
+    });
   </script>
 </body>
 </html>
