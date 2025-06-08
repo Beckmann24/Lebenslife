@@ -56,21 +56,51 @@
     </div>
   </div>
 
+  <!-- Beziehungs-Popup -->
+  <div id="beziehungsPopup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+    <div class="bg-white rounded-xl p-6 shadow-lg w-full max-w-md">
+      <h2 class="text-xl font-bold mb-4">Beziehungen</h2>
+      <table class="w-full table-auto border">
+        <thead>
+          <tr><th class="text-left p-2 border">Beziehung</th><th class="text-left p-2 border">Name</th></tr>
+        </thead>
+        <tbody id="beziehungsListe"></tbody>
+      </table>
+      <button onclick="schliesseBeziehungen()" class="mt-4 bg-red-500 text-white px-4 py-2 rounded">Schließen</button>
+    </div>
+  </div>
+
   <script>
     let charakter = JSON.parse(localStorage.getItem("charakter"));
     let alter = 0;
     let geld = 0;
-
     const storyLog = document.getElementById("storyLog");
 
-    const zufallsStory = [
+    // Beziehungen generieren
+    let beziehungen = [];
+    const nachname = charakter.nachname;
+
+    function zufallsBeziehungenErstellen() {
+      const eltern = [
+        { beziehung: "Mutter", name: `${charakter.mutterVorname || "Sabine"} ${nachname}` },
+        { beziehung: "Vater", name: `${charakter.vaterVorname || "Thomas"} ${Math.random() < 0.5 ? nachname : "Müller"}` }
+      ];
+      beziehungen.push(...eltern);
+
+      const geschwisterZufall = Math.random();
+      if (geschwisterZufall < 0.3) beziehungen.push({ beziehung: "Schwester", name: `Anna ${nachname}` });
+      else if (geschwisterZufall < 0.6) beziehungen.push({ beziehung: "Bruder", name: `Lukas ${nachname}` });
+      else if (geschwisterZufall < 0.8) beziehungen.push({ beziehung: "Schwester", name: `Emma ${nachname}` }, { beziehung: "Bruder", name: `Max ${nachname}` });
+    }
+
+    zufallsBeziehungenErstellen();
+
+    const storyStart = [
       `Deine Eltern ${charakter.nachname} haben sich im Studium kennengelernt. Sie sind verheiratet und wohnen in ${charakter.geburtsort}.`,
       `Dein Vater war Elektriker, deine Mutter Lehrerin. Sie beschlossen ein Kind zu bekommen, um ihr Glück zu teilen.`
     ];
 
-    const storyEintrag = document.createElement("p");
-    storyEintrag.textContent = zufallsStory[Math.floor(Math.random() * zufallsStory.length)];
-    storyLog.appendChild(storyEintrag);
+    storyLog.innerHTML += `<p>${storyStart[Math.floor(Math.random() * storyStart.length)]}</p>`;
 
     function aktualisiereAnzeige() {
       document.getElementById("spielerName").textContent = `${charakter.vorname} ${charakter.nachname}`;
@@ -123,7 +153,18 @@
     }
 
     function zeigeBeziehungen() {
-      alert("Du hast eine gute Beziehung zu deinen Eltern.");
+      const liste = document.getElementById("beziehungsListe");
+      liste.innerHTML = "";
+      beziehungen.forEach(p => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td class='border p-2'>${p.beziehung}</td><td class='border p-2'>${p.name}</td>`;
+        liste.appendChild(tr);
+      });
+      document.getElementById("beziehungsPopup").classList.remove("hidden");
+    }
+
+    function schliesseBeziehungen() {
+      document.getElementById("beziehungsPopup").classList.add("hidden");
     }
 
     aktualisiereAnzeige();
