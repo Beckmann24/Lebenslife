@@ -1,109 +1,123 @@
-<!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nachbarschaftshilfe 2.0</title>
+  <title>Flight Dispatcher Simulator</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
-      background: #f5f5f5;
-    }
-
-    header {
-      background-color: #2d6a4f;
+      font-family: Arial, sans-serif;
+      background: #1a1a1a;
       color: white;
-      padding: 1rem;
-      text-align: center;
+      overflow: hidden;
     }
 
-    main {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 1rem;
-      background-color: white;
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .route-panel {
+      display: flex;
+      flex-direction: column;
+      max-width: 600px;
+      margin: 0 auto;
+      background: #2a2a2a;
+      padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    section {
-      margin-bottom: 2rem;
+    label {
+      margin: 10px 0 4px;
     }
 
-    h2 {
-      color: #2d6a4f;
+    input, select {
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: none;
     }
 
-    footer {
-      text-align: center;
-      padding: 1rem;
-      background: #ccc;
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      font-size: 18px;
+      background: #00aaff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
 
-    .highlight {
-      background-color: #d8f3dc;
-      padding: 0.5rem;
-      border-left: 5px solid #40916c;
-      margin: 1rem 0;
+    #output {
+      margin-top: 20px;
+      background: #1e1e1e;
+      padding: 10px;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
+  <div id="overlay">
+    <h1>Flight Dispatcher Control Panel</h1>
+    <div class="route-panel">
+      <label for="departure">Departure Airport (ICAO):</label>
+      <input id="departure" placeholder="z.B. EDDF" />
 
-  <header>
-    <h1>Nachbarschaftshilfe 2.0</h1>
-    <p>Jüngere helfen Älteren – lokal, einfach, digital.</p>
-  </header>
+      <label for="arrival">Arrival Airport (ICAO):</label>
+      <input id="arrival" placeholder="z.B. EDDM" />
 
-  <main>
-    <section>
-      <h2>Zweck</h2>
-      <p>
-        Unsere Plattform bringt hilfsbereite junge Menschen mit älteren Menschen in ihrer Nachbarschaft zusammen – für kleine Aufgaben wie Einkaufen, Hilfe bei Technik oder einfach ein nettes Gespräch.
-      </p>
-    </section>
+      <label for="cruise">Cruise Altitude (FL):</label>
+      <input id="cruise" placeholder="z.B. 350" />
 
-    <section>
-      <h2>Wie funktioniert's?</h2>
-      <div class="highlight">
-        Matching-System: Ort, Zeit, Tätigkeit – alles berücksichtigt.
-      </div>
-      <ul>
-        <li>Profil erstellen</li>
-        <li>Hilfe anbieten oder Gesuch aufgeben</li>
-        <li>Passende Person wird automatisch vorgeschlagen</li>
-        <li>Kontakt aufnehmen und loslegen!</li>
-      </ul>
-    </section>
+      <label for="wind">Wind Direction (°) and Speed (kt):</label>
+      <input id="wind" placeholder="z.B. 260/45" />
 
-    <section>
-      <h2>Motivation</h2>
-      <p>
-        Engagement zahlt sich aus: Für jede Hilfeleistung gibt es einen digitalen „Stempel“.
-      </p>
-      <ul>
-        <li>Motivation für Schüler:innen (z. B. soziale Projekte)</li>
-        <li>Nachweis für Ehrenamt</li>
-        <li>Persönliche Übersicht im Nutzerbereich</li>
-      </ul>
-    </section>
+      <label for="tas">True Airspeed (kt):</label>
+      <input id="tas" placeholder="z.B. 480" />
 
-    <section>
-      <h2>Demnächst verfügbar:</h2>
-      <ul>
-        <li>Login & Registrierung</li>
-        <li>Matching-Funktion</li>
-        <li>Digitale Stempelkarte</li>
-        <li>Filter nach Ort und Zeit</li>
-      </ul>
-    </section>
-  </main>
+      <button onclick="calculateRoute()">Plan Route</button>
 
-  <footer>
-    &copy; 2025 Nachbarschaftshilfe 2.0 – Gemeinsam für ein besseres Miteinander
-  </footer>
+      <div id="output"></div>
+    </div>
+  </div>
 
+  <script>
+    function calculateRoute() {
+      const dep = document.getElementById("departure").value;
+      const arr = document.getElementById("arrival").value;
+      const cruise = document.getElementById("cruise").value;
+      const wind = document.getElementById("wind").value;
+      const tas = parseInt(document.getElementById("tas").value);
+
+      const [windDir, windSpd] = wind.split("/").map(Number);
+
+      // Einfaches Beispiel: Rückenwind/Gegenwind basierend auf grober Richtung
+      const isTailwind = windDir > 150 && windDir < 210; // Südlicher Wind als Rückenwind
+      const gs = isTailwind ? tas + windSpd : tas - windSpd;
+
+      const output = document.getElementById("output");
+      output.innerHTML = `
+        <strong>Route:</strong> ${dep} → ${arr}<br>
+        <strong>Flight Level:</strong> FL${cruise}<br>
+        <strong>Wind:</strong> ${windDir}° @ ${windSpd} kt<br>
+        <strong>True Airspeed:</strong> ${tas} kt<br>
+        <strong>Estimated Groundspeed:</strong> ${gs} kt
+      `;
+    }
+  </script>
 </body>
 </html>
